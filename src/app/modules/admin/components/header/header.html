@@ -1,0 +1,61 @@
+<header class="bg-white border-b border-gray-200">
+    <div class="max-w-screen-2xl mx-auto px-4 lg:px-6">
+      <div class="flex items-center justify-between h-16">
+  
+        <!-- Logo + identidad -->
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-gray-700 flex items-center justify-center text-white font-bold">SV</div>
+          <div>
+            <h1 class="text-sm font-semibold text-gray-900">SADIT-CVH</h1>
+            <p class="text-[11px] text-gray-500">Transporte Convencional</p>
+          </div>
+        </div>
+  
+        <!-- Buscador global potente -->
+        <div class="flex-1 max-w-xl mx-4">
+          <label for="globalSearch" class="sr-only">Buscar en el sistema</label>
+          <div class="relative">
+            <input
+              id="globalSearch"
+              type="text"
+              placeholder="Buscar expediente, serie, usuario…"
+              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+              (input)="onSearch($event)"
+              (keydown)="onKeyDown($event)"
+            />
+            <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <kbd class="absolute right-3 top-2.5 px-1.5 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">Ctrl + K</kbd>
+          </div>
+        </div>
+  
+        <!-- Área derecha: notificaciones + perfil -->
+        <div class="flex items-center gap-4">
+  
+          <!-- Notificaciones -->
+          <button type="button" aria-label="Notificaciones" class="relative p-2 rounded-lg hover:bg-gray-100 transition">
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 17h5l-5 5v-5zM10.97 4.97a.75.75 0 011.08 0l3.5 3.5a.75.75 0 010 1.08l-3.5 3.5a.75.75 0 01-1.08-1.08L13.32 9H10V7h3.32L10.97 5.75a.75.75 0 010-1.08z" />
+            </svg>
+            <span class="absolute top-0 right-0 w-2 h-2 bg-sky-600 rounded-full"></span>
+          </button>
+  
+          <!-- Perfil -->
+          <div class="flex items-center gap-2">
+            <img src="https://ui-avatars.com/api?name=Admin&background=374151&color=fff" alt="avatar" class="w-9 h-9 rounded-full">
+            <div class="hidden md:block">
+              <p class="text-sm font-medium text-gray-900">Administrador</p>
+              <p class="text-xs text-gray-500">admin@hidalgo.gob.mx</p>
+            </div>
+            <button title="exit" type="button" class="p-1 rounded hover:bg-gray-100 transition">
+              <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>

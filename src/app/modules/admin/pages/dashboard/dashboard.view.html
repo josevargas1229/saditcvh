@@ -1,0 +1,205 @@
+<!-- COMPONENTES DASHBOARD | SIN HEADER/SIDEBAR -->
+<!-- ============================================================
+     ESTADÍSTICAS PRINCIPALES
+============================================================ -->
+<div class="p-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        
+        <!-- Tarjeta 1: Expedientes Totales -->
+        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Expedientes Digitalizados</p>
+                    <h3 class="text-2xl font-bold text-gray-800 mt-1">30,000</h3>
+                    <p class="text-xs text-green-600 mt-2">
+                        <i class="fas fa-check-circle mr-1"></i>
+                        Proyecto completo
+                    </p>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                    <i class="fas fa-archive text-blue-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tarjeta 2: Páginas Procesadas -->
+        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Páginas Procesadas</p>
+                    <h3 class="text-2xl font-bold text-gray-800 mt-1">14.19M</h3>
+                    <p class="text-xs text-blue-600 mt-2">
+                        <i class="fas fa-file-alt mr-1"></i>
+                        Con OCR aplicado
+                    </p>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                    <i class="fas fa-file-pdf text-green-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tarjeta 3: Usuarios Activos -->
+        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Usuarios Activos</p>
+                    <h3 class="text-2xl font-bold text-gray-800 mt-1">24</h3>
+                    <p class="text-xs text-gray-600 mt-2">
+                        <i class="fas fa-user-check mr-1"></i>
+                        18 en línea
+                    </p>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                    <i class="fas fa-users text-purple-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tarjeta 4: Búsquedas Hoy -->
+        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Búsquedas Hoy</p>
+                    <h3 class="text-2xl font-bold text-gray-800 mt-1">342</h3>
+                    <p class="text-xs text-orange-600 mt-2">
+                        <i class="fas fa-search mr-1"></i>
+                        +12% vs ayer
+                    </p>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+                    <i class="fas fa-search text-orange-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         GRÁFICAS Y TABLAS
+    ============================================================ -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        
+        <!-- Gráfica de Actividad -->
+        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="font-semibold text-gray-800">Actividad del Sistema</h3>
+                <select title="filtro" class="text-sm border border-gray-300 rounded-lg px-3 py-1 bg-white">
+                    <option>Últimos 7 días</option>
+                    <option>Últimos 30 días</option>
+                    <option>Últimos 90 días</option>
+                </select>
+            </div>
+            <div class="h-64 flex items-center justify-center text-gray-400">
+                <!-- Aquí iría una gráfica real (Chart.js, etc.) -->
+                <div class="text-center">
+                    <i class="fas fa-chart-line text-4xl mb-3"></i>
+                    <p>Gráfica de actividad del sistema</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Expedientes Recientes -->
+        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <h3 class="font-semibold text-gray-800 mb-6">Expedientes Recientes</h3>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                    <div>
+                        <p class="font-medium text-sm">EXP-STCH-2025-04567</p>
+                        <p class="text-xs text-gray-500">Licencia de operación | Juan Pérez</p>
+                    </div>
+                    <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Digitalizado</span>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                    <div>
+                        <p class="font-medium text-sm">EXP-STCH-2025-04568</p>
+                        <p class="text-xs text-gray-500">Renovación de permiso | Transportes Hidalgo</p>
+                    </div>
+                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">En revisión</span>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                    <div>
+                        <p class="font-medium text-sm">EXP-STCH-2025-04569</p>
+                        <p class="text-xs text-gray-500">Inspección vehicular | Unidad 2345</p>
+                    </div>
+                    <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Digitalizado</span>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                    <div>
+                        <p class="font-medium text-sm">EXP-STCH-2025-04570</p>
+                        <p class="text-xs text-gray-500">Solicitud nueva ruta | Ruta Pachuca-Mineral</p>
+                    </div>
+                    <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Pendiente</span>
+                </div>
+                
+                <div class="text-center pt-2">
+                    <button class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                        Ver todos los expedientes →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         ACCIONES RÁPIDAS
+    ============================================================ -->
+    <div class="mb-8">
+        <h3 class="font-semibold text-gray-800 mb-4">Acciones Rápidas</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button class="bg-white border border-gray-200 rounded-lg p-4 flex items-center space-x-4 hover:shadow-md transition-shadow">
+                <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <i class="fas fa-search text-blue-600"></i>
+                </div>
+                <div class="text-left">
+                    <p class="font-medium text-sm">Búsqueda Avanzada</p>
+                    <p class="text-xs text-gray-500">Buscar en 30,000 expedientes</p>
+                </div>
+            </button>
+            
+            <button class="bg-white border border-gray-200 rounded-lg p-4 flex items-center space-x-4 hover:shadow-md transition-shadow">
+                <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                    <i class="fas fa-upload text-green-600"></i>
+                </div>
+                <div class="text-left">
+                    <p class="font-medium text-sm">Subir Documentos</p>
+                    <p class="text-xs text-gray-500">Agregar nuevos expedientes</p>
+                </div>
+            </button>
+            
+            <button class="bg-white border border-gray-200 rounded-lg p-4 flex items-center space-x-4 hover:shadow-md transition-shadow">
+                <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                    <i class="fas fa-file-export text-purple-600"></i>
+                </div>
+                <div class="text-left">
+                    <p class="font-medium text-sm">Generar Reporte</p>
+                    <p class="text-xs text-gray-500">Estadísticas y métricas</p>
+                </div>
+            </button>
+        </div>
+    </div>
+
+<script>
+// Funcionalidades específicas del dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    // Interacción con tarjetas de expedientes
+    const expedienteCards = document.querySelectorAll('.cursor-pointer');
+    expedienteCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Aquí iría la navegación al expediente detallado
+            console.log('Navegar a expediente');
+        });
+    });
+    
+    // Interacción con botones de acciones rápidas
+    const actionButtons = document.querySelectorAll('.bg-white.border');
+    actionButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const actionText = this.querySelector('.font-medium').textContent;
+            console.log('Acción seleccionada:', actionText);
+        });
+    });
+});
+</script>

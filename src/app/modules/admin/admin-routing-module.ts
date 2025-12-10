@@ -1,0 +1,122 @@
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { Admin } from './admin';
+import { DashboardView } from './pages/dashboard/dashboard.view';
+import { AuditoriaView } from './pages/auditoria/auditoria.view';
+import { DigitalizacionView } from './pages/digitalizacion/digitalizacion.view';
+import { ExpedientesView } from './pages/expedientes/expedientes.view';
+import { ReportesView } from './pages/reportes/reportes.view';
+import { RespaldosView } from './pages/respaldos/respaldos.view';
+import { UsuariosView } from './pages/usuarios/usuarios.view';
+
+const routes: Routes = [
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  {
+    path: '',
+    component: Admin,
+    children: [
+      {
+        path: 'dashboard',
+        component: DashboardView,
+        data: {
+          title: 'dashboard',
+          breadcrumb: [
+            {
+              label: 'dashboard',
+              path: '/admin/dashboard',
+            },
+          ],
+        },
+      },
+      {
+        path: 'auditoria',
+        component: AuditoriaView,
+        data: {
+          title: 'auditoria',
+          breadcrumb: [
+            {
+              label: 'auditoria',
+              path: '/admin/auditoria',
+            },
+          ],
+        },
+      },
+      {
+        path: 'digitalizacion',
+        component: DigitalizacionView,
+        data: {
+          title: 'digitalizacion',
+          breadcrumb: [
+            {
+              label: 'digitalizacion',
+              path: '/admin/digitalizacion',
+            },
+          ],
+        },
+      },
+      {
+        path: 'expedientes',
+        component: ExpedientesView,
+        data: {
+          title: 'expedientes',
+          breadcrumb: [
+            {
+              label: 'expedientes',
+              path: '/admin/expedientes',
+            },
+          ],
+        },
+      },
+      {
+        path: 'reportes',
+        component: ReportesView,
+        data: {
+          title: 'reportes',
+          breadcrumb: [
+            {
+              label: 'reportes',
+              path: '/admin/reportes',
+            },
+          ],
+        },
+      },
+      {
+        path: 'respaldos',
+        component: RespaldosView,
+        data: {
+          title: 'respaldos',
+          breadcrumb: [
+            {
+              label: 'respaldos',
+              path: '/admin/respaldos',
+            },
+          ],
+        },
+      },
+      {
+        path: 'usuarios',
+        component: UsuariosView,
+        data: {
+          title: 'usuarios',
+          breadcrumb: [
+            {
+              label: 'usuarios',
+              path: '/admin/usuarios',
+            },
+          ],
+        },
+      },
+      {
+        path: '**',
+        redirectTo: 'dashboard',
+      },
+    ],
+  },
+
+];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class AdminRoutingModule { }
