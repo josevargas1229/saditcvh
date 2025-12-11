@@ -1,0 +1,24 @@
+<div class="space-y-1">
+    <label [for]="inputId" class="text-sm text-gray-700 font-medium">{{ label }}</label>
+    <div class="relative">
+        <input
+            [type]="inputId === 'email' ? 'email' : 'text'"
+            [id]="inputId"
+            [formControl]="control"
+            required
+            [placeholder]="placeholder"
+            class="w-full pl-5 pr-3 py-2 border border-gray-300 rounded-lg
+                focus:outline-none focus:ring-2 focus:ring-[#A02142] focus:border-[#A02142]"
+            [ngClass]="{
+                'border-red-500 focus:border-red-500 focus:ring-red-500': control.invalid && control.touched
+            }"
+        />
+        </div>
+
+    <div *ngIf="control.invalid && control.touched" class="text-xs text-red-600 mt-1">
+        <span *ngIf="validationErrors?.['required']">El campo **{{ label }}** es requerido.</span>
+        <span *ngIf="validationErrors?.['minlength']">Debe contener al menos 5 caracteres.</span>
+        <span *ngIf="validationErrors?.['maxlength']">No debe exceder los 100 caracteres.</span>
+        <span *ngIf="validationErrors?.['pattern']">Formato o caracteres no válidos.</span>
+    </div>
+</div>
