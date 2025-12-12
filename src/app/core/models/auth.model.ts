@@ -3,14 +3,22 @@ export interface Role {
   name: string; // 'administrador', 'operador', etc.
 }
 
+// Interfaces para Auth
 export interface User {
   id: number;
-  username?: string;
-  email: string;
+  username: string;
   first_name: string;
   last_name: string;
-  cargo_id?: number;
-  Roles?: Role[];
+  second_last_name?: string | null;
+  email: string;
+  phone?: string | null;
+  active?: boolean;
+  cargo_id?: number | null;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+  // backend devuelve roles como array de strings
+  roles: string[];
 }
 
 export interface Cargo {
@@ -19,6 +27,7 @@ export interface Cargo {
 }
 
 export interface AuthResponse {
+  success: boolean;
+  message: string;
   user: User;
-  message?: string;
 }
