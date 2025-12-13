@@ -22,7 +22,7 @@
     </div>
 
     <div *ngIf="control.invalid && control.touched" class="text-xs text-red-600 mt-1">
-        <span *ngIf="validationErrors?.['required']">El campo **{{ label }}** es requerido.</span>
+        <span *ngIf="validationErrors?.['required']">El campo <b>{{ label }}</b> es requerido.</span>
         <span *ngIf="validationErrors?.['minlength']">Debe contener al menos 5 caracteres.</span>
         <span *ngIf="validationErrors?.['maxlength']">No debe exceder los 100 caracteres.</span>
         <span *ngIf="validationErrors?.['pattern']">Formato o caracteres no válidos.</span>

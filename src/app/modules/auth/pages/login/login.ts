@@ -17,7 +17,7 @@ export class Login implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -35,45 +35,28 @@ export class Login implements OnInit {
   }
 
   onSubmit(): void {
-  this.errorMessage = null;
-  this.loginForm.markAllAsTouched();
+    this.errorMessage = null;
+    this.loginForm.markAllAsTouched();
 
-  if (!this.loginForm.valid) return;
+    if (this.loginForm.valid) {
+      this.loading = true;
 
-  this.loading = true;
+      const credentials = {
+        username: this.usuarioControl.value!,
+        password: this.passwordControl.value!,
+      };
 
-  const credentials = {
-    username: this.usuarioControl.value,
-    password: this.passwordControl.value,
-  };
-
-  // 🚨 Primero obtener CSRF
-  this.authService.getCsrfToken().subscribe({
-    next: () => {
-      // Luego sí hacer login
       this.authService.login(credentials).subscribe({
-        next: (user) => {
+        next: () => {
           this.loading = false;
-          console.log("Usuario autenticado:", user);
-
-          this.router.navigate(['/dashboard']);
+          this.router.navigate(['/admin/dashboard']);
         },
         error: (err) => {
           this.loading = false;
-
-          this.errorMessage =
-            err?.error?.message ??
-            "Error de autenticación. Verifica tus credenciales.";
-
-          console.error("Error en login:", err);
+          this.errorMessage = err?.error?.message || 'Credenciales incorrectas';
+          console.error('Login error:', err);
         }
       });
-    },
-    error: (err) => {
-      this.loading = false;
-      this.errorMessage = "Error obteniendo CSRF: " + (err.error?.message ?? "");
-      console.error("CSRF error:", err);
     }
-  });
   }
 }

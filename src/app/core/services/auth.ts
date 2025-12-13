@@ -16,7 +16,7 @@ export class AuthService {
   public currentUser = this._currentUser.asReadonly();
   public isAuthenticated = computed(() => !!this._currentUser());
 
-  constructor() {}
+  constructor() { }
 
   // obtener el token CSRF inicial (si lo usas desde backend)
   getCsrfToken(): Observable<any> {
@@ -57,24 +57,23 @@ export class AuthService {
   }
 
   checkStatus(): Promise<boolean> {
-    return new Promise((resolve) => {
-      this.http.get<AuthResponse>(`${this.API_URL}/check-status`, { withCredentials: true })
-        .subscribe({
-          next: (res) => {
-            // puede que backend devuelva success+user
-            const user = (res as any).user ?? (res as any);
-            this._currentUser.set(user);
-            resolve(true);
-          },
-          error: () => {
-            this._currentUser.set(null);
-            resolve(false);
-          }
-        });
+    return this.http.post<{ authenticated: boolean; user?: User }>(
+      `${this.API_URL}/check-status`,
+      { withCredentials: true }
+    ).toPromise().then(response => {
+      if (response?.authenticated && response.user) {
+        this._currentUser.set(response.user);
+        return true;
+      } else {
+        this._currentUser.set(null);
+        return false;
+      }
+    }).catch(() => {
+      this._currentUser.set(null);
+      return false;
     });
   }
 
-  // Verifica si el usuario tiene un rol específico (ej: 'administrador')
   hasRole(expectedRole: string): boolean {
     const user = this._currentUser();
     if (!user || !user.roles) return false;
