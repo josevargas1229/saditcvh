@@ -1,9 +1,9 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { User, Role, Cargo, RoleCount } from '../../../../core/models/user.model'; 
+import { User, Role, Cargo, RoleCount } from '../../../../core/models/user.model';
 import { UserService } from '../../../../core/services/user.service';
 import { RoleService } from '../../../../core/services/role.service';
 import { CargoService } from '../../../../core/services/cargo.service';
-import { combineLatest, of, Subject, switchMap, debounceTime, tap, startWith } from 'rxjs'; 
+import { combineLatest, of, Subject, switchMap, debounceTime, tap, startWith } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ApiResponse } from '../../../../core/models/api-response.model';
 import { Pagination, PaginatedResponse } from '../../../../core/models/paginated-response.model';
@@ -28,7 +28,7 @@ export class UsuariosView implements OnInit {
   public roles = signal<Role[]>([]);
   public cargos = signal<Cargo[]>([]);
 
-  public realRoleCounts = signal<RoleCount[]>([]); 
+  public realRoleCounts = signal<RoleCount[]>([]);
 
   public isLoading = signal<boolean>(true);
   public error = signal<string | null>(null);
@@ -43,13 +43,13 @@ export class UsuariosView implements OnInit {
 
   // Filtros/Búsqueda
   public search = signal<string>('');
-  public filterRole = signal<string>('all'); 
-  public filterCargo = signal<string>('all'); 
+  public filterRole = signal<string>('all');
+  public filterCargo = signal<string>('all');
   public filterStatus = signal<string>('all');
 
   // Ordenamiento
   public sortColumn = signal<SortColumn>('name');
-  public sortDirection = signal<SortDirection>('asc'); 
+  public sortDirection = signal<SortDirection>('asc');
 
   // Modal CRUD (Crear/Editar)
   public isModalOpen = signal<boolean>(false);
@@ -71,8 +71,8 @@ export class UsuariosView implements OnInit {
     this.loadCatalogs();
 
     this.filterTrigger.pipe(
-      startWith(null), 
-      debounceTime(300), 
+      startWith(null),
+      debounceTime(300),
       switchMap(() => {
         this.isLoading.set(true);
         this.error.set(null);
@@ -104,14 +104,14 @@ export class UsuariosView implements OnInit {
     combineLatest([
       this.cargoService.getCargos(),
       this.roleService.getRoles(),
-      this.roleService.getRoleCounts(), 
+      this.roleService.getRoleCounts(),
     ])
       .pipe(
         tap(([cargos, roles, roleCounts]) => {
           this.cargos.set(cargos);
           this.roles.set(roles);
           console.log('roles cargados', roles);
-          this.realRoleCounts.set(roleCounts); 
+          this.realRoleCounts.set(roleCounts);
            console.log('roles cargados', roleCounts);
         }),
         catchError(err => {
@@ -122,7 +122,7 @@ export class UsuariosView implements OnInit {
       )
       .subscribe();
   }
-  
+
   private buildSearchParams(): any {
     const roleId = this.filterRole() === 'all' ? undefined : parseInt(this.filterRole());
     const cargoId = this.filterCargo() === 'all' ? undefined : parseInt(this.filterCargo());
@@ -136,7 +136,7 @@ export class UsuariosView implements OnInit {
       role_id: roleId,
       cargo_id: cargoId,
       active: active,
-      sortBy: this.sortColumn(), 
+      sortBy: this.sortColumn(),
       order: this.sortDirection(),
     };
   }
@@ -158,7 +158,7 @@ export class UsuariosView implements OnInit {
       }
     });
   }
-  
+
   applyFilters(): void {
     this.filterTrigger.next();
   }
@@ -238,7 +238,7 @@ export class UsuariosView implements OnInit {
     this.isConfirmDeleteModalOpen.set(false);
     this.userToDelete.set(null);
   }
-  
+
   /**
    * Ejecuta la eliminación (inactivación) del usuario después de la confirmación.
    */

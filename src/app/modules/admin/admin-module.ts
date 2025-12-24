@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms'; 
+import { ReactiveFormsModule } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { AdminRoutingModule } from './admin-routing-module';
 import { Admin } from './admin';
@@ -13,8 +13,9 @@ import { RespaldosView } from './pages/respaldos/respaldos.view';
 import { UsuariosView } from './pages/usuarios/usuarios.view';
 import { Header } from './components/header/header';
 import { Sidebar } from './components/sidebar/sidebar';
-import { UserFormComponent } from './components/user-form/user-form'; 
+import { UserFormComponent } from './components/user-form/user-form';
 import { PasswordToggleComponent } from './components/password-toggle/password-toggle';
+import { PermissionMatrixComponent } from './components/permission-matrix/permission-matrix';
 
 
 @NgModule({
@@ -29,8 +30,9 @@ import { PasswordToggleComponent } from './components/password-toggle/password-t
     UsuariosView,
     Header,
     Sidebar,
-    UserFormComponent, 
-    PasswordToggleComponent, 
+    UserFormComponent,
+    PasswordToggleComponent,
+    PermissionMatrixComponent
   ],
   imports: [
     CommonModule,
