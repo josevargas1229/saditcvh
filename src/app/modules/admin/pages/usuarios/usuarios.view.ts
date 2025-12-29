@@ -7,7 +7,7 @@ import { combineLatest, of, Subject, switchMap, debounceTime, tap, startWith } f
 import { catchError } from 'rxjs/operators';
 import { ApiResponse } from '../../../../core/models/api-response.model';
 import { Pagination, PaginatedResponse } from '../../../../core/models/paginated-response.model';
-import {Router} from "@angular/router";
+import { Router } from "@angular/router"; // Router ya estaba importado
 
 type SortColumn = 'name' | 'creator' | 'editor';
 type SortDirection = 'asc' | 'desc';
@@ -84,7 +84,6 @@ export class UsuariosView implements OnInit {
         return this.userService.getUsers(params).pipe(
           tap((response: PaginatedResponse<User>) => {
             this.users.set(response.data);
-            console.log('Usuarios cargados:', response.data);
             this.pagination.set(response.pagination);
             this.isLoading.set(false);
           }),
@@ -112,9 +111,7 @@ export class UsuariosView implements OnInit {
         tap(([cargos, roles, roleCounts]) => {
           this.cargos.set(cargos);
           this.roles.set(roles);
-          console.log('roles cargados', roles);
           this.realRoleCounts.set(roleCounts);
-           console.log('roles cargados', roleCounts);
         }),
         catchError(err => {
           console.error('Error cargando catálogos/conteos:', err);
@@ -193,7 +190,6 @@ export class UsuariosView implements OnInit {
     this.goToPage(this.pagination().page - 1);
   }
 
-  // Utilidad para obtener el nombre completo de un usuario de auditoría
   getAuditUserName(userId: number | null): User | undefined {
     return this.users().find(u => u.id === userId);
   }
@@ -213,40 +209,48 @@ export class UsuariosView implements OnInit {
     this.selectedUser.set(null);
   }
 
-  handleUserSaved(event: { success: boolean; message: string }): void {
+  // MODIFICACIÓN CLAVE PARA REDIRECCIÓN
+  handleUserSaved(event: { success: boolean; message: string; data?: User }): void {
+    // 1. Verificar si era creación (no había usuario seleccionado al abrir el modal)
+    const wasCreating = this.selectedUser() === null;
+
     this.closeModal();
 
     if (event.success) {
       console.log('Usuario guardado:', event.message);
-      this.pagination.update(pag => ({ ...pag, page: 1 }));
-      this.applyFilters();
+
+      // 2. Si fue creación y tenemos el objeto data (con el ID), redirigimos
+      if (wasCreating && event.data && event.data.id) {
+          console.log('Redirigiendo a permisos del usuario:', event.data.id);
+          // Timeout pequeño para dar tiempo visual
+          setTimeout(() => {
+              this.router.navigate(['/admin/permisos'], {
+                  queryParams: { userId: event.data!.id }
+              });
+          }, 150);
+      } else {
+          // Si fue edición, comportamiento normal (refrescar tabla)
+          this.pagination.update(pag => ({ ...pag, page: 1 }));
+          this.applyFilters();
+      }
     } else {
       console.error('Error al guardar usuario:', event.message);
     }
   }
 
-  /**
-   * Abre el modal de confirmación de eliminación/inactivación.
-   */
   deleteUser(user: User): void {
     this.userToDelete.set(user);
     this.isConfirmDeleteModalOpen.set(true);
   }
 
-  /**
-   * Cierra el modal de confirmación de eliminación/inactivación.
-   */
   closeDeleteConfirmation(): void {
     this.isConfirmDeleteModalOpen.set(false);
     this.userToDelete.set(null);
   }
 
-  /**
-   * Ejecuta la eliminación (inactivación) del usuario después de la confirmación.
-   */
   performDeleteAction(): void {
     const user = this.userToDelete();
-    this.closeDeleteConfirmation(); // Cierra el modal
+    this.closeDeleteConfirmation();
 
     if (!user) {
       console.error("No hay usuario seleccionado para eliminar.");
@@ -262,7 +266,7 @@ export class UsuariosView implements OnInit {
         }),
         catchError(err => {
           console.error('Error al eliminar usuario:', err);
-          this.error.set(`Error al eliminar ${user.first_name}.`); // Feedback de error
+          this.error.set(`Error al eliminar ${user.first_name}.`);
           return of(null);
         })
       )
