@@ -16,6 +16,8 @@ import { Sidebar } from './components/sidebar/sidebar';
 import { UserFormComponent } from './components/user-form/user-form';
 import { PasswordToggleComponent } from './components/password-toggle/password-toggle';
 import { PermissionMatrixComponent } from './components/permission-matrix/permission-matrix';
+import { ActionBadgeComponent } from './components/action-badge/action-badge';
+import { LogDetailModalComponent } from './components/log-detail-modal/log-detail-modal';
 
 
 @NgModule({
@@ -32,7 +34,9 @@ import { PermissionMatrixComponent } from './components/permission-matrix/permis
     Sidebar,
     UserFormComponent,
     PasswordToggleComponent,
-    PermissionMatrixComponent
+    PermissionMatrixComponent,
+    LogDetailModalComponent,
+    ActionBadgeComponent
   ],
   imports: [
     CommonModule,
