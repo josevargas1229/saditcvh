@@ -7,6 +7,7 @@ import { combineLatest, of, Subject, switchMap, debounceTime, tap, startWith } f
 import { catchError } from 'rxjs/operators';
 import { ApiResponse } from '../../../../core/models/api-response.model';
 import { Pagination, PaginatedResponse } from '../../../../core/models/paginated-response.model';
+import {Router} from "@angular/router";
 
 type SortColumn = 'name' | 'creator' | 'editor';
 type SortDirection = 'asc' | 'desc';
@@ -21,6 +22,7 @@ export class UsuariosView implements OnInit {
   private userService = inject(UserService);
   private roleService = inject(RoleService);
   private cargoService = inject(CargoService);
+  private router = inject(Router);
 
   private filterTrigger = new Subject<void>();
 
@@ -270,5 +272,10 @@ export class UsuariosView implements OnInit {
 
   viewUserDetails(user: User): void {
     console.log('Ver detalles de usuario:', user);
+  }
+
+  managePermissions(user: User): void {
+    // Navega a la ruta de permisos enviando el ID como parámetro
+    this.router.navigate(['/admin/permisos'], { queryParams: { userId: user.id } });
   }
 }

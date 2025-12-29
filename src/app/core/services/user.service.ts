@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { User, Permission, Municipio } from '../../core/models/user.model';
+import { User, Permission, Municipio, Role } from '../../core/models/user.model';
 import { PaginatedResponse } from '../../core/models/paginated-response.model';
 import { ApiResponse } from '../../core/models/api-response.model';
 
@@ -11,7 +11,8 @@ export class UserService {
   private http = inject(HttpClient);
   private readonly API_URL = `${environment.apiUrl}/users`;
   private readonly PERMISSIONS_URL = `${environment.apiUrl}/permissions`;
-  private readonly MUNICIPIOS_URL = `${environment.apiUrl}/municipios`; // Nueva URL
+  private readonly MUNICIPIOS_URL = `${environment.apiUrl}/municipios`;
+  private readonly ROLES_URL = `${environment.apiUrl}/roles`;
 
   getUsers(params: {
     page?: number;
@@ -42,8 +43,20 @@ export class UserService {
     return this.getUsers(params);
   }
 
+  getAllRoles(): Observable<ApiResponse<Role[]>> {
+    return this.http.get<ApiResponse<Role[]>>(this.ROLES_URL, {
+      withCredentials: true
+    });
+  }
+
   getUserById(id: number) {
     return this.http.get<ApiResponse<User>>(`${this.API_URL}/${id}`, {
+      withCredentials: true
+    });
+  }
+
+  getUserPermissionsRaw(id: number) {
+    return this.http.get<ApiResponse<any[]>>(`${this.API_URL}/${id}/permissions-raw`, {
       withCredentials: true
     });
   }

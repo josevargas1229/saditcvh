@@ -1,38 +1,57 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { UserService } from '../../../../core/services/user.service';
-import { User, Permission, Municipio } from '../../../../core/models/user.model';
+import { ActivatedRoute } from '@angular/router'; // <--- IMPORTANTE
+import { User, Permission, Municipio, Role } from '../../../../core/models/user.model';
 
 @Component({
   selector: 'app-permission-matrix',
   standalone: false,
-  templateUrl: './permission-matrix.html'
+  templateUrl: './permission-matrix.html',
+  styles: [`
+    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 10px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: #D1D5DB; }
+  `]
 })
 export class PermissionMatrixComponent implements OnInit {
 
   selectedUserId: number | null = null;
   private userService = inject(UserService);
+  private cdr = inject(ChangeDetectorRef);
+  private route = inject(ActivatedRoute);
 
-  usersList: User[] = [];
+  // Datos Usuarios
+  allUsers: User[] = [];
+  filteredUsers: User[] = [];
+  searchUserTerm = '';
+
+  // Filtro Rol
+  rolesList: Role[] = [];
+  selectedRoleId: number | null = null;
+
+  // Datos Generales
   permissionsColumns: Permission[] = [];
+  municipiosMap = new Map<number, Municipio>();
+  catalogMunicipios: Municipio[] = [];
 
+  // Tabla
   allMunicipiosRows: any[] = [];
   displayedRows: any[] = [];
 
+  // Estado
   accessMatrix: { [key: number]: { [key: number]: boolean } } = {};
   originalMatrix: { [key: number]: { [key: number]: boolean } } = {};
 
-  loading = false;
+  isRefreshing = false;
   saving = false;
   loadingUsers = false;
-  hasChanges = false; // Esto habilitará el botón
+  hasChanges = false;
 
-  pagination = { page: 1, limit: 5, total: 0 };
-  pageSizeOptions = [5, 10, 20, 50];
+  pagination = { page: 1, limit: 10, total: 0 };
   searchTerm = '';
-
   isAssignModalOpen = false;
   loadingCatalog = false;
-  catalogMunicipios: Municipio[] = [];
   filteredCatalog: Municipio[] = [];
   displayedCatalog: Municipio[] = [];
   selectedMunicipiosIds: Set<number> = new Set();
@@ -41,6 +60,7 @@ export class PermissionMatrixComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCatalogues();
+    this.loadRoles();
     this.loadUsersList();
     this.preloadMunicipiosCatalog();
   }
@@ -51,12 +71,22 @@ export class PermissionMatrixComponent implements OnInit {
     });
   }
 
+  loadRoles() {
+    this.userService.getAllRoles().subscribe({
+      next: (res) => {
+        if (res.success) this.rolesList = res.data || [];
+      }
+    });
+  }
+
   loadUsersList() {
     this.loadingUsers = true;
-    this.userService.getAllUsers({ limit: 1000, active: 'true' }).subscribe({
+    this.userService.getAllUsers({ limit: 2000, active: 'true', sortBy: 'name', order: 'asc' }).subscribe({
       next: (res: any) => {
-        this.usersList = res.rows || res.data || [];
+        this.allUsers = res.rows || res.data || [];
+        this.filteredUsers = this.allUsers;
         this.loadingUsers = false;
+        this.cdr.detectChanges();
       },
       error: () => this.loadingUsers = false
     });
@@ -64,94 +94,123 @@ export class PermissionMatrixComponent implements OnInit {
 
   preloadMunicipiosCatalog() {
     this.userService.getAllMunicipios().subscribe(res => {
-      if (res.success) this.catalogMunicipios = res.data;
+        if(res.success) {
+            this.catalogMunicipios = res.data;
+            // Llenar el mapa para acceso rápido
+            this.municipiosMap.clear();
+            this.catalogMunicipios.forEach(m => this.municipiosMap.set(m.id, m));
+            this.checkUrlParams();
+        }
     });
+  }
+
+  checkUrlParams() {
+    this.route.queryParams.subscribe(params => {
+        const urlUserId = params['userId'];
+        if (urlUserId) {
+            const id = Number(urlUserId);
+            // Solo cargamos si es diferente o si es la primera carga
+            if (this.selectedUserId !== id) {
+                this.selectedUserId = id;
+                this.onUserChange(); // Ahora sí, el mapa existe y funcionará
+            }
+        }
+    });
+  }
+
+
+  filterUsers() {
+    const term = this.searchUserTerm.toLowerCase();
+    this.filteredUsers = this.allUsers.filter(u => {
+      const matchesText = u.first_name.toLowerCase().includes(term) ||
+                          u.last_name.toLowerCase().includes(term) ||
+                          u.username.toLowerCase().includes(term);
+      const matchesRole = this.selectedRoleId ? u.roles?.some(r => r.id == this.selectedRoleId) : true;
+      return matchesText && matchesRole;
+    });
+  }
+
+  selectUser(userId: number) {
+    if (this.selectedUserId === userId) return;
+    if (this.hasChanges) {
+       if (!confirm('Tiene cambios sin guardar. ¿Desea descartarlos?')) return;
+    }
+    this.selectedUserId = userId;
+    this.onUserChange();
+  }
+
+  getInitials(user: User): string {
+    return (user.first_name.charAt(0) + (user.last_name ? user.last_name.charAt(0) : '')).toUpperCase();
   }
 
   onUserChange() {
-    this.allMunicipiosRows = [];
-    this.displayedRows = [];
-    this.accessMatrix = {};
+    if (!this.selectedUserId) { this.resetTable(); return; }
+
+    // Asegurarse de que el mapa exista antes de procesar
+    if (this.municipiosMap.size === 0) {
+        // Si por alguna razón el mapa no está listo, esperamos o recargamos catálogo
+        return;
+    }
+
+    this.isRefreshing = true;
     this.hasChanges = false;
     this.pagination.page = 1;
-    this.pagination.total = 0;
+    this.searchTerm = '';
 
-    if (this.selectedUserId) {
-      this.loadUserMatrix();
-    }
-  }
-
-  loadUserMatrix() {
-    if (!this.selectedUserId) return;
-
-    // Solo mostramos loading si realmente estamos trayendo datos,
-    // pero mantenemos la estructura visual
-    this.loading = true;
-    this.hasChanges = false;
-
-    this.userService.getUserById(this.selectedUserId).subscribe({
+    this.userService.getUserPermissionsRaw(this.selectedUserId).subscribe({
       next: (res) => {
-        this.loading = false;
-        if (res.success && res.data) {
-          this.processData(res.data);
-          this.updateSelectedIdsFromMatrix();
-        }
+        if (res.success) this.processDataRaw(res.data);
+        this.isRefreshing = false;
+        this.cdr.detectChanges();
       },
-      error: () => this.loading = false
+      error: () => { this.isRefreshing = false; this.cdr.detectChanges(); }
     });
   }
 
-  processData(user: User) {
-    const muniMap = new Map();
+  resetTable() {
+    this.allMunicipiosRows = [];
+    this.displayedRows = [];
     this.accessMatrix = {};
+    this.originalMatrix = {};
+    this.hasChanges = false;
+    this.pagination.total = 0;
+  }
 
-    if (user.municipality_access && user.municipality_access.length > 0) {
-      user.municipality_access.forEach(access => {
-        if (access.municipio && access.municipio.id) {
-          if (!muniMap.has(access.municipio_id)) {
-            muniMap.set(access.municipio_id, access.municipio);
-            this.accessMatrix[access.municipio_id] = {};
-          }
-          this.accessMatrix[access.municipio_id][access.permission_id] = true;
+  processDataRaw(permissions: any[]) {
+    this.accessMatrix = {};
+    const municipiosEncontrados = new Set<number>();
+    const userMunicipios: any[] = [];
+
+    for (const p of permissions) {
+        const mId = p.municipio_id;
+        const pId = p.permission_id;
+
+        if (!this.accessMatrix[mId]) {
+            this.accessMatrix[mId] = {};
+            // Usamos el MAPA que ya garantizamos que está cargado
+            const muniData = this.municipiosMap.get(mId);
+            if (muniData) {
+                userMunicipios.push(muniData);
+                municipiosEncontrados.add(mId);
+            }
         }
-      });
+        this.accessMatrix[mId][pId] = true;
     }
 
-    // Guardamos el estado original para comparar después
+    this.allMunicipiosRows = userMunicipios.sort((a, b) => (a.num || 0) - (b.num || 0));
     this.originalMatrix = JSON.parse(JSON.stringify(this.accessMatrix));
-
-    this.allMunicipiosRows = Array.from(muniMap.values())
-        .sort((a: any, b: any) => (a.num || 0) - (b.num || 0));
-
+    this.selectedMunicipiosIds = municipiosEncontrados;
     this.updateTable();
   }
 
-  updateSelectedIdsFromMatrix() {
-    this.selectedMunicipiosIds.clear();
-    this.allMunicipiosRows.forEach(m => this.selectedMunicipiosIds.add(m.id));
-  }
-
-  // --- MODAL ---
   openAssignModal() {
     this.isAssignModalOpen = true;
     this.modalSearchTerm = '';
     this.renderLimit = 50;
-
-    if (this.catalogMunicipios.length > 0) {
-      this.filterLocal();
-    } else {
-      this.loadingCatalog = true;
-      this.userService.getAllMunicipios().subscribe(res => {
-        this.loadingCatalog = false;
-        if (res.success) {
-          this.catalogMunicipios = res.data;
-          this.filterLocal();
-        }
-      });
-    }
+    this.filterLocalModal();
   }
 
-  filterLocal() {
+  filterLocalModal() {
     let results = this.catalogMunicipios;
     if (this.modalSearchTerm.trim()) {
       const term = this.modalSearchTerm.toLowerCase();
@@ -168,199 +227,153 @@ export class PermissionMatrixComponent implements OnInit {
   onModalScroll(event: any) {
     const el = event.target;
     if (el.scrollHeight - el.scrollTop <= el.clientHeight + 50) {
-      if (this.renderLimit < this.filteredCatalog.length) {
-        this.renderLimit += 50;
-        this.updateDisplayedCatalog();
-      }
+        if (this.renderLimit < this.filteredCatalog.length) {
+            this.renderLimit += 50;
+            this.updateDisplayedCatalog();
+        }
     }
   }
 
   closeAssignModal() {
     this.isAssignModalOpen = false;
-    this.updateSelectedIdsFromMatrix();
+    const currentIds = this.allMunicipiosRows.map(m => m.id);
+    this.selectedMunicipiosIds = new Set(currentIds);
   }
 
   toggleSelection(muniId: number) {
-    if (this.selectedMunicipiosIds.has(muniId)) {
-      this.selectedMunicipiosIds.delete(muniId);
-    } else {
-      this.selectedMunicipiosIds.add(muniId);
-    }
+    if (this.selectedMunicipiosIds.has(muniId)) this.selectedMunicipiosIds.delete(muniId);
+    else this.selectedMunicipiosIds.add(muniId);
   }
-
-
 
   saveAssignments() {
     this.isAssignModalOpen = false;
-
     const verPermiso = this.permissionsColumns.find(p => p.name.toLowerCase() === 'ver') || this.permissionsColumns[0];
-
-    // Quitamos de la vista los desmarcados (solo visual)
-    Object.keys(this.accessMatrix).forEach(muniIdStr => {
-        const muniId = parseInt(muniIdStr);
-        if (!this.selectedMunicipiosIds.has(muniId)) {
-            delete this.accessMatrix[muniId];
+    Object.keys(this.accessMatrix).forEach(mIdStr => {
+        const mId = parseInt(mIdStr);
+        if (!this.selectedMunicipiosIds.has(mId)) delete this.accessMatrix[mId];
+    });
+    const newUserMunicipios: any[] = [];
+    this.selectedMunicipiosIds.forEach(mId => {
+        const muniData = this.municipiosMap.get(mId);
+        if (muniData) newUserMunicipios.push(muniData);
+        if (!this.accessMatrix[mId]) {
+            this.accessMatrix[mId] = {};
+            if (verPermiso) this.accessMatrix[mId][verPermiso.id] = true;
         }
     });
-
-    // Agregamos los nuevos con permiso "Ver"
-    this.selectedMunicipiosIds.forEach(muniId => {
-        if (!this.accessMatrix[muniId]) {
-            this.accessMatrix[muniId] = {};
-            if (verPermiso) this.accessMatrix[muniId][verPermiso.id] = true;
-        }
-    });
-
-    // Reconstruimos la tabla visualmente
-    const selectedFullObjects = this.catalogMunicipios.filter(m => this.selectedMunicipiosIds.has(m.id));
-    this.allMunicipiosRows = selectedFullObjects.sort((a, b) => a.num - b.num);
-
+    this.allMunicipiosRows = newUserMunicipios.sort((a, b) => a.num - b.num);
     this.updateTable();
-
-    // Verificamos cambios contra la original
-    // Como modificamos accessMatrix pero NO originalMatrix, checkChanges detectará diferencias
-    // y habilitará el botón "Guardar Cambios".
     this.checkChanges();
   }
-
 
   saveChanges() {
     if (!this.selectedUserId) return;
 
-    // No ponemos loading = true para no bloquear la tabla
     const changes = [];
-
-    // Recolectamos diferencias (Nuevos municipios serán detectados aquí también)
     for (const muniId of this.allMunicipiosRows.map(m => m.id)) {
         for (const perm of this.permissionsColumns) {
-            const originalVal = this.originalMatrix[muniId] ? !!this.originalMatrix[muniId][perm.id] : false;
-            const currentVal = this.accessMatrix[muniId] ? !!this.accessMatrix[muniId][perm.id] : false;
-
-            if (originalVal !== currentVal) {
-                changes.push({
-                    municipioId: muniId,
-                    permissionId: perm.id,
-                    value: currentVal
-                });
+            const oldVal = this.originalMatrix[muniId] ? !!this.originalMatrix[muniId][perm.id] : false;
+            const newVal = this.accessMatrix[muniId] ? !!this.accessMatrix[muniId][perm.id] : false;
+            if (oldVal !== newVal) {
+                changes.push({ municipioId: muniId, permissionId: perm.id, value: newVal });
             }
         }
     }
-
-    // También detectamos si se BORRARON municipios (están en original pero no en actual)
     const currentMuniIds = new Set(this.allMunicipiosRows.map(m => m.id));
-    Object.keys(this.originalMatrix).forEach(origMuniStr => {
-        const origMuniId = parseInt(origMuniStr);
-        if (!currentMuniIds.has(origMuniId)) {
-            // Este municipio fue eliminado visualmente, hay que mandar borrar sus permisos
+    Object.keys(this.originalMatrix).forEach(mStr => {
+        const mId = parseInt(mStr);
+        if (!currentMuniIds.has(mId)) {
             for (const perm of this.permissionsColumns) {
-                if (this.originalMatrix[origMuniId][perm.id]) {
-                    changes.push({
-                        municipioId: origMuniId,
-                        permissionId: perm.id,
-                        value: false // False = Borrar
-                    });
+                if (this.originalMatrix[mId][perm.id]) {
+                    changes.push({ municipioId: mId, permissionId: perm.id, value: false });
                 }
             }
         }
     });
 
-    if (changes.length === 0) {
-        this.hasChanges = false;
-        return;
-    }
+    if (changes.length === 0) { this.hasChanges = false; return; }
 
+    // Activar Overlay
+    this.saving = true;
 
-
-    // Actualizamos el "Backup" inmediatamente (asumiendo éxito)
-    this.originalMatrix = JSON.parse(JSON.stringify(this.accessMatrix));
-    this.hasChanges = false; // Deshabilita el botón al instante
-
-    // Mensaje simple inmediato
-    alert('Cambios aplicados correctamente.');
-
-    // Enviamos al backend en "silencio"
     this.userService.updatePermissionsBatch(this.selectedUserId, changes).subscribe({
-        next: () => console.log('Sincronizado con BD'),
+        next: () => {
+            this.originalMatrix = JSON.parse(JSON.stringify(this.accessMatrix));
+            this.hasChanges = false;
+            this.saving = false; // Quitar Overlay
+            this.cdr.detectChanges();
+        },
         error: (err) => {
-            console.error('Error de sincronización', err);
-            // Solo molestamos al usuario si algo falló gravemente
-            alert('Advertencia: Hubo un problema de conexión al guardar en el servidor.');
+            console.error(err);
+            this.saving = false;
+            this.cdr.detectChanges();
+            alert('Error de sincronización.');
         }
     });
   }
 
-  // --- TABLA Y UTILIDADES ---
-
   updateTable() {
     let filtered = this.allMunicipiosRows;
     if (this.searchTerm.trim()) {
-      const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(m => m.nombre.toLowerCase().includes(term));
+        const term = this.searchTerm.toLowerCase();
+        filtered = filtered.filter(m => m.nombre.toLowerCase().includes(term));
     }
     this.pagination.total = filtered.length;
-    const startIndex = (this.pagination.page - 1) * this.pagination.limit;
-    this.displayedRows = filtered.slice(startIndex, startIndex + this.pagination.limit);
-
+    const start = (this.pagination.page - 1) * this.pagination.limit;
+    this.displayedRows = filtered.slice(start, start + this.pagination.limit);
     if(this.displayedRows.length === 0 && this.pagination.page > 1) {
         this.pagination.page = 1;
         this.updateTable();
     }
   }
 
-  hasPermission(municipioId: number, permissionId: number): boolean {
-    return this.accessMatrix[municipioId] ? !!this.accessMatrix[municipioId][permissionId] : false;
+  hasPermission(mId: number, pId: number): boolean {
+    return this.accessMatrix[mId] ? !!this.accessMatrix[mId][pId] : false;
   }
 
-  toggle(municipioId: number, permissionId: number, event: any) {
-    const isChecked = event.target.checked;
-    if (!this.accessMatrix[municipioId]) this.accessMatrix[municipioId] = {};
-    this.accessMatrix[municipioId][permissionId] = isChecked;
+  toggle(mId: number, pId: number, event: any) {
+    const checked = event.target.checked;
+    if (!this.accessMatrix[mId]) this.accessMatrix[mId] = {};
+    this.accessMatrix[mId][pId] = checked;
     this.checkChanges();
   }
 
   checkChanges() {
     let changed = false;
-
-    // Checar cambios en municipios visibles
-    for (const muniId of this.allMunicipiosRows.map(m => m.id)) {
+    for (const mId of this.allMunicipiosRows.map(m => m.id)) {
         for (const perm of this.permissionsColumns) {
-            const originalVal = this.originalMatrix[muniId] ? !!this.originalMatrix[muniId][perm.id] : false;
-            const currentVal = this.accessMatrix[muniId] ? !!this.accessMatrix[muniId][perm.id] : false;
-            if (originalVal !== currentVal) {
-                changed = true; break;
-            }
+            const oldVal = this.originalMatrix[mId] ? !!this.originalMatrix[mId][perm.id] : false;
+            const newVal = this.accessMatrix[mId] ? !!this.accessMatrix[mId][perm.id] : false;
+            if (oldVal !== newVal) { changed = true; break; }
         }
         if (changed) break;
     }
-
-    // Checar si se borraron municipios (longitudes diferentes)
     if (!changed) {
-        const originalKeys = Object.keys(this.originalMatrix).length;
-        const currentKeys = Object.keys(this.accessMatrix).length;
-        if (originalKeys !== currentKeys) changed = true;
+        const oldLen = Object.keys(this.originalMatrix).length;
+        const newLen = Object.keys(this.accessMatrix).length;
+        if (oldLen !== newLen) changed = true;
     }
-
     this.hasChanges = changed;
   }
 
   cancelChanges() {
-    if (!confirm('¿Deshacer cambios pendientes?')) return;
-
-    // Restaurar desde el backup
-    this.accessMatrix = JSON.parse(JSON.stringify(this.originalMatrix));
-
-    // Restaurar filas visuales
-    const originalMuniIds = new Set(Object.keys(this.originalMatrix).map(Number));
-    const restoredObjects = this.catalogMunicipios.filter(m => originalMuniIds.has(m.id));
-    this.allMunicipiosRows = restoredObjects.sort((a, b) => a.num - b.num);
-    this.selectedMunicipiosIds = new Set(originalMuniIds);
-
-    this.updateTable();
-    this.hasChanges = false;
+    if (confirm('¿Descartar cambios?')) {
+        this.accessMatrix = JSON.parse(JSON.stringify(this.originalMatrix));
+        const restoredMunicipios: any[] = [];
+        Object.keys(this.originalMatrix).forEach(key => {
+            const mId = Number(key);
+            const muni = this.municipiosMap.get(mId);
+            if(muni) restoredMunicipios.push(muni);
+        });
+        this.allMunicipiosRows = restoredMunicipios.sort((a,b)=>a.num-b.num);
+        this.selectedMunicipiosIds = new Set(Object.keys(this.originalMatrix).map(Number));
+        this.updateTable();
+        this.hasChanges = false;
+    }
   }
 
   onSearchChange() { this.pagination.page = 1; this.updateTable(); }
   changePage(p: number) { this.pagination.page = p; this.updateTable(); }
-  get totalPages() { return Math.ceil(this.pagination.total / this.pagination.limit); }
-  trackByMuni(index: number, item: any): number { return item.id; }
+  get totalPages() { return this.pagination.limit ? Math.ceil(this.pagination.total / this.pagination.limit) : 0; }
+  trackByMuni(index: number, item: any) { return item.id; }
 }
