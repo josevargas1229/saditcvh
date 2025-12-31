@@ -92,6 +92,7 @@ export class AuditoriaView implements OnInit {
       .subscribe({
         next: (fullLog) => {
           this.selectedLog = fullLog;
+          console.log(fullLog);
           this.isModalOpen = true;
         }
       });

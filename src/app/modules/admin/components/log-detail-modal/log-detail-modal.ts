@@ -15,12 +15,18 @@ export class LogDetailModalComponent {
     this.close.emit();
   }
 
-  /**
-   * Determina si el log actual es una actualización de permisos
-   * basándose en la acción o el tipo de detalle.
-   */
   isUpdatePerms(): boolean {
     return this.log?.action === 'UPDATE_PERMS' || this.log?.details?.type === 'BATCH_UPDATE';
+  }
+
+  isUserEvent(): boolean {
+    const actions = ['CREATE', 'UPDATE', 'DELETE'];
+    return actions.includes(this.log?.action || '') && this.log?.module === 'USER';
+  }
+
+  // NUEVA: Verifica si el valor de un cambio es un array (como los roles)
+  isFieldValueArray(value: any): boolean {
+    return Array.isArray(value);
   }
 
   getInitials(): string {
@@ -33,8 +39,14 @@ export class LogDetailModalComponent {
   }
 
   getChangesKeys(changes: any): string[] {
-    // Si es un array (como en el nuevo formato de permisos), no devolvemos llaves
     if (!changes || Array.isArray(changes)) return [];
-    return Object.keys(changes);
+    // Filtrar 'type' si es que se coló en el objeto de cambios
+    return Object.keys(changes).filter(key => key !== 'type');
+  }
+
+  getDataKeys(data: any): string[] {
+    if (!data) return [];
+    const blacklist = ['password', 'createdAt', 'updatedAt', 'deletedAt', 'created_by', 'updated_by', 'id', 'active'];
+    return Object.keys(data).filter(key => !blacklist.includes(key));
   }
 }
