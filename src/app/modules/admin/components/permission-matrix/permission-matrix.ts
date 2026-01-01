@@ -58,6 +58,8 @@ export class PermissionMatrixComponent implements OnInit {
   modalSearchTerm = '';
   renderLimit = 50;
 
+  selectedUserIsAdmin = false;
+  
   ngOnInit(): void {
     this.loadCatalogues();
     this.loadRoles();
@@ -81,7 +83,7 @@ export class PermissionMatrixComponent implements OnInit {
 
   loadUsersList() {
     this.loadingUsers = true;
-    this.userService.getAllUsers({ limit: 2000, active: 'true', sortBy: 'name', order: 'asc' }).subscribe({
+    this.userService.getUsers({ limit: 2000, active: 'true', sortBy: 'name', order: 'asc' }).subscribe({
       next: (res: any) => {
         this.allUsers = res.rows || res.data || [];
         this.filteredUsers = this.allUsers;
@@ -144,13 +146,17 @@ export class PermissionMatrixComponent implements OnInit {
   }
 
   onUserChange() {
-    if (!this.selectedUserId) { this.resetTable(); return; }
-
-    // Asegurarse de que el mapa exista antes de procesar
-    if (this.municipiosMap.size === 0) {
-        // Si por alguna razón el mapa no está listo, esperamos o recargamos catálogo
-        return;
+    if (!this.selectedUserId) { 
+      this.selectedUserIsAdmin = false;
+      this.resetTable(); 
+      return; 
     }
+
+    // Buscamos el objeto usuario en nuestra lista local para ver su rol
+    const user = this.allUsers.find(u => u.id === this.selectedUserId);
+    this.selectedUserIsAdmin = user?.roles?.some(r => r.id === 1) || false;
+
+    if (this.municipiosMap.size === 0) return;
 
     this.isRefreshing = true;
     this.hasChanges = false;
@@ -165,6 +171,17 @@ export class PermissionMatrixComponent implements OnInit {
       },
       error: () => { this.isRefreshing = false; this.cdr.detectChanges(); }
     });
+  }
+
+  // 2. NUEVO MÉTODO: Para bloquear el checkbox según las reglas de negocio
+  isActionDisabled(permName: string): boolean {
+    // REGLA 1: Si es Admin, todo está deshabilitado (ya tiene todo, no se puede quitar)
+    if (this.selectedUserIsAdmin) return true;
+
+    // REGLA 2: Si NO es Admin, la columna "eliminar" siempre está deshabilitada
+    if (permName.toLowerCase() === 'eliminar') return true;
+
+    return false;
   }
 
   resetTable() {
