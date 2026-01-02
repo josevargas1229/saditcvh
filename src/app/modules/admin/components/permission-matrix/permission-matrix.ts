@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { UserService } from '../../../../core/services/user.service';
-import { ActivatedRoute } from '@angular/router'; // <--- IMPORTANTE
+import { ActivatedRoute } from '@angular/router';
 import { User, Permission, Municipio, Role } from '../../../../core/models/user.model';
 
 @Component({
@@ -59,7 +59,7 @@ export class PermissionMatrixComponent implements OnInit {
   renderLimit = 50;
 
   selectedUserIsAdmin = false;
-  
+
   ngOnInit(): void {
     this.loadCatalogues();
     this.loadRoles();
@@ -98,7 +98,6 @@ export class PermissionMatrixComponent implements OnInit {
     this.userService.getAllMunicipios().subscribe(res => {
         if(res.success) {
             this.catalogMunicipios = res.data;
-            // Llenar el mapa para acceso rápido
             this.municipiosMap.clear();
             this.catalogMunicipios.forEach(m => this.municipiosMap.set(m.id, m));
             this.checkUrlParams();
@@ -111,15 +110,13 @@ export class PermissionMatrixComponent implements OnInit {
         const urlUserId = params['userId'];
         if (urlUserId) {
             const id = Number(urlUserId);
-            // Solo cargamos si es diferente o si es la primera carga
             if (this.selectedUserId !== id) {
                 this.selectedUserId = id;
-                this.onUserChange(); // Ahora sí, el mapa existe y funcionará
+                this.onUserChange();
             }
         }
     });
   }
-
 
   filterUsers() {
     const term = this.searchUserTerm.toLowerCase();
@@ -146,13 +143,12 @@ export class PermissionMatrixComponent implements OnInit {
   }
 
   onUserChange() {
-    if (!this.selectedUserId) { 
+    if (!this.selectedUserId) {
       this.selectedUserIsAdmin = false;
-      this.resetTable(); 
-      return; 
+      this.resetTable();
+      return;
     }
 
-    // Buscamos el objeto usuario en nuestra lista local para ver su rol
     const user = this.allUsers.find(u => u.id === this.selectedUserId);
     this.selectedUserIsAdmin = user?.roles?.some(r => r.id === 1) || false;
 
@@ -173,14 +169,9 @@ export class PermissionMatrixComponent implements OnInit {
     });
   }
 
-  // 2. NUEVO MÉTODO: Para bloquear el checkbox según las reglas de negocio
   isActionDisabled(permName: string): boolean {
-    // REGLA 1: Si es Admin, todo está deshabilitado (ya tiene todo, no se puede quitar)
     if (this.selectedUserIsAdmin) return true;
-
-    // REGLA 2: Si NO es Admin, la columna "eliminar" siempre está deshabilitada
     if (permName.toLowerCase() === 'eliminar') return true;
-
     return false;
   }
 
@@ -204,7 +195,6 @@ export class PermissionMatrixComponent implements OnInit {
 
         if (!this.accessMatrix[mId]) {
             this.accessMatrix[mId] = {};
-            // Usamos el MAPA que ya garantizamos que está cargado
             const muniData = this.municipiosMap.get(mId);
             if (muniData) {
                 userMunicipios.push(muniData);
@@ -262,13 +252,42 @@ export class PermissionMatrixComponent implements OnInit {
     else this.selectedMunicipiosIds.add(muniId);
   }
 
+
+  get isAllFilteredSelected(): boolean {
+    if (this.filteredCatalog.length === 0) return false;
+    return this.filteredCatalog.every(m => this.selectedMunicipiosIds.has(m.id));
+  }
+
+  toggleSelectAll() {
+
+    const allSelected = this.isAllFilteredSelected;
+    const originalIds = new Set(Object.keys(this.originalMatrix).map(Number));
+
+    if (allSelected) {
+      // Recorremos solo los visibles (filtrados)
+      this.filteredCatalog.forEach(m => {
+        // Solo desmarcamos si NO es uno de los originales
+        // Si el usuario quiere quitar uno original, debe hacerlo manualmente
+        if (!originalIds.has(m.id)) {
+            this.selectedMunicipiosIds.delete(m.id);
+        }
+      });
+    } else {
+      
+      this.filteredCatalog.forEach(m => this.selectedMunicipiosIds.add(m.id));
+    }
+  }
+
+
   saveAssignments() {
     this.isAssignModalOpen = false;
     const verPermiso = this.permissionsColumns.find(p => p.name.toLowerCase() === 'ver') || this.permissionsColumns[0];
+
     Object.keys(this.accessMatrix).forEach(mIdStr => {
         const mId = parseInt(mIdStr);
         if (!this.selectedMunicipiosIds.has(mId)) delete this.accessMatrix[mId];
     });
+
     const newUserMunicipios: any[] = [];
     this.selectedMunicipiosIds.forEach(mId => {
         const muniData = this.municipiosMap.get(mId);
@@ -278,6 +297,7 @@ export class PermissionMatrixComponent implements OnInit {
             if (verPermiso) this.accessMatrix[mId][verPermiso.id] = true;
         }
     });
+
     this.allMunicipiosRows = newUserMunicipios.sort((a, b) => a.num - b.num);
     this.updateTable();
     this.checkChanges();
@@ -310,14 +330,13 @@ export class PermissionMatrixComponent implements OnInit {
 
     if (changes.length === 0) { this.hasChanges = false; return; }
 
-    // Activar Overlay
     this.saving = true;
 
     this.userService.updatePermissionsBatch(this.selectedUserId, changes).subscribe({
         next: () => {
             this.originalMatrix = JSON.parse(JSON.stringify(this.accessMatrix));
             this.hasChanges = false;
-            this.saving = false; // Quitar Overlay
+            this.saving = false;
             this.cdr.detectChanges();
         },
         error: (err) => {
