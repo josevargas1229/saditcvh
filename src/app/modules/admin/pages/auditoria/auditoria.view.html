@@ -13,7 +13,7 @@
             <label class="text-[11px] font-bold text-gray-500 uppercase mb-1 block">Búsqueda libre</label>
             <div class="flex relative">
             <input type="text" [(ngModel)]="filters.search" (keyup.enter)="onSearch()"
-                    placeholder="Usuario, acción o ID..."
+                    placeholder="Usuario ejecutor o acción"
                     class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#BC955B] focus:border-[#BC955B]">
             <button (click)="onSearch()" class="absolute right-0 top-0 h-full px-3 bg-[#691831] text-white rounded-r-lg hover:bg-[#A02142] transition">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
