@@ -1,32 +1,66 @@
-import { Component, EventEmitter, HostListener, inject, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, inject, Input, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { debounceTime, fromEvent, Subscription } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth';
 import { MunicipioService } from '../../../../core/services/explorador-municipio.service';
 import { AutorizacionTreeService } from '../../../../core/services/explorador-autorizacion-tree.service';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment';
+
+interface sidebarInfo {
+  label: string;
+  value: string;
+  status: 'good' | 'warning' | 'critical';
+  progress: number;
+  show: boolean;
+}
 
 @Component({
   selector: 'app-sidebar',
   standalone: false,
+  styleUrls: ['./sidebar.scss'],
   templateUrl: './sidebar.html',
 })
 export class Sidebar {
-  sidebarOpen = true;
+  sidebarOpen = false; // Cambia a false para que inicie cerrado
   isMobile = false;
   private resizeSubscription!: Subscription;
   private treeService = inject(AutorizacionTreeService);
+  @Input() territoriesCount = 0;
 
-
-
+  dashboardInfo: any;
   @Output() sidebarToggled = new EventEmitter<boolean>();
 
 
-  constructor(private router: Router,private authService: AuthService) {
+  constructor(private router: Router, private authService: AuthService, private http: HttpClient, private municipioService: MunicipioService) {
     this.checkViewport();
   }
 
+  sidebarInfo: sidebarInfo = {
+    label: 'Cargando...',
+    value: '',
+    status: 'good',
+    progress: 0,
+    show: false
+  };
+
   ngOnInit(): void {
+    // El sidebar ahora inicia cerrado
+    // this.sidebarOpen = false; // Ya está en false por defecto, pero lo mantenemos explícito
+
     this.initializeSidebarState();
+
+    // Inicializar información del dashboard
+    this.http.get(`${environment.apiUrl}/dashboard/status`)
+      .subscribe((data: any) => {
+        this.sidebarInfo = {
+          label: data.label,
+          value: data.value,
+          status: data.status,
+          progress: data.progress,
+          show: data.show
+        };
+      });
 
     // Suscribirse a eventos de resize con debounce para mejor performance
     this.resizeSubscription = fromEvent(window, 'resize')
@@ -51,10 +85,10 @@ export class Sidebar {
     if (!wasMobile && this.isMobile && this.sidebarOpen) {
       this.closeSidebar();
     }
-    // Si cambia de mobile a desktop, abrir sidebar automáticamente
-    else if (wasMobile && !this.isMobile && !this.sidebarOpen) {
-      this.openSidebar();
-    }
+    // Si cambia de mobile a desktop, mantener cerrado (ya no se abre automáticamente)
+    // else if (wasMobile && !this.isMobile && !this.sidebarOpen) {
+    //   this.openSidebar(); // Comenta o elimina esta línea
+    // }
   }
 
   private checkViewport(): void {
@@ -63,35 +97,9 @@ export class Sidebar {
   }
 
   private initializeSidebarState(): void {
-    // Al inicio, sidebar abierto en desktop, cerrado en mobile
-    if (this.isMobile) {
-      this.sidebarOpen = false;
-    } else {
-      this.sidebarOpen = true;
-    }
+    // Al inicio, sidebar cerrado tanto en desktop como en mobile
+    this.sidebarOpen = false; // Siempre inicia cerrado
     this.sidebarToggled.emit(this.sidebarOpen);
-  }
-
-
-
-  openSidebar(): void {
-    this.sidebarOpen = true;
-    this.sidebarToggled.emit(true);
-
-    // Bloquear scroll en body cuando sidebar está abierto en móvil
-    if (this.isMobile) {
-      document.body.style.overflow = 'hidden';
-    }
-  }
-
-  closeSidebar(): void {
-    this.sidebarOpen = false;
-    this.sidebarToggled.emit(false);
-
-    // Restaurar scroll en body
-    if (this.isMobile) {
-      document.body.style.overflow = '';
-    }
   }
 
   // Método público para abrir sidebar desde header
@@ -113,23 +121,11 @@ export class Sidebar {
   public getIsMobile(): boolean {
     return this.isMobile;
   }
-  toggleSidebar() {
-    this.sidebarOpen = !this.sidebarOpen;
-    this.sidebarToggled.emit(this.sidebarOpen);
-    console.log("Sidebar open state:", this.sidebarOpen);
-  }
-  // toggleSidebar(): void {
-  //   if (this.sidebarOpen) {
-  //     this.closeSidebar();
-  //   } else {
-  //     this.openSidebar();
-  //   }
-  // }
+
   // Nuevas variables para las funcionalidades
   showNotificationsDropdown = false;
   showQuickValidateMenu = false;
   maintenanceMode: boolean = false;
-  
 
   // Datos de ejemplo - en producción vendrían de un servicio
   pendingValidationCount = 12;
@@ -137,30 +133,6 @@ export class Sidebar {
   lastBackupTime = '2024-01-15 03:00';
   lastBackupStatus: 'success' | 'failed' = 'success';
   diskUsage = 75; // porcentaje
-
-  notifications = [
-    {
-      id: 1,
-      type: 'error',
-      title: 'Error de carga',
-      message: '5 expedientes con error en la carga automática',
-      time: 'Hace 2 horas'
-    },
-    {
-      id: 2,
-      type: 'warning',
-      title: 'Espacio en disco bajo',
-      message: 'Solo queda 15% de espacio disponible',
-      time: 'Hace 1 día'
-    },
-    {
-      id: 3,
-      type: 'info',
-      title: 'Backup completado',
-      message: 'Respaldo automático ejecutado correctamente',
-      time: 'Hace 2 días'
-    }
-  ];
 
   // Métodos
   toggleNotifications() {
@@ -232,9 +204,6 @@ export class Sidebar {
     }
   }
 
-
-
-  
   /**
    * Maneja la lógica de cierre de sesión.
    * Llama al método logout del AuthService.
@@ -244,15 +213,10 @@ export class Sidebar {
     // y redirige al usuario a la página de login.
     this.authService.logout().subscribe({
       next: (success) => {
-        // this.municipioService.reset();
-        // this.treeService.reset();
         this.treeService.reset();
-        // Opcional: Puedes añadir un console.log o un toast de éxito
         console.log('Sesión cerrada exitosamente');
       },
       error: (err) => {
-        // Opcional: Manejo de errores (aunque el logout del servicio
-        // ya está configurado para retornar 'true' incluso en error de backend)
         console.error('Error al cerrar sesión', err);
       }
     });
@@ -265,4 +229,49 @@ export class Sidebar {
     return this.authService.hasRole('administrador');
   }
 
+  // Método para manejar clics en enlaces (cierra sidebar en móvil)
+  onNavLinkClick(): void {
+    if (this.isMobile && this.sidebarOpen) {
+      this.closeSidebar();
+    }
+  }
+
+  // Método para manejar la tecla Escape
+  @HostListener('document:keydown.escape', ['$event'])
+  handleEscape(event: Event): void {
+    if (this.isMobile && this.sidebarOpen) {
+      this.closeSidebar();
+    }
+  }
+
+  // Corrige el método toggleSidebar para mejor manejo en móvil
+  toggleSidebar(): void {
+    if (this.sidebarOpen) {
+      this.closeSidebar();
+    } else {
+      this.openSidebar();
+    }
+
+  }
+
+  // Asegúrate de que estos métodos existen en tu componente:
+  private openSidebar(): void {
+    this.sidebarOpen = true;
+    // ✅ IMPORTANTE: En desktop, emitir true para ml-56, en mobile emitir false para ml-0
+    this.sidebarToggled.emit(!this.isMobile); // ← CAMBIO CLAVE AQUÍ
+
+    if (this.isMobile) {
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  private closeSidebar(): void {
+    this.sidebarOpen = false;
+    // ✅ En desktop, emitir false para ml-16, en mobile emitir false para ml-0
+    this.sidebarToggled.emit(false); // ← SIEMPRE false cuando se cierra
+
+    if (this.isMobile) {
+      document.body.style.overflow = '';
+    }
+  }
 }
