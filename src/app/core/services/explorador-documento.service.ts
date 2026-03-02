@@ -368,6 +368,24 @@ export class DocumentoService {
       );
   }
 
+  // Método para eliminar una versión en específico
+  eliminarVersion(documentoId: number, versionId: number): Observable<ApiResponse<void>> {
+    this.loadingState.set(true);
+    this.errorState.set(null);
+
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${documentoId}/version/${versionId}`, { withCredentials: true })
+      .pipe(
+        tap((response) => {
+          this.loadingState.set(false);
+        }),
+        catchError((error) => {
+          this.errorState.set(error.message);
+          this.loadingState.set(false);
+          return throwError(() => error);
+        })
+      );
+  }
+
   // Método para buscar documentos
   buscarDocumentos(criterios: any): void {
     this.loadingState.set(true);
