@@ -21,6 +21,7 @@ export interface Documento {
   updated_at?: string;
   archivosDigitales?: ArchivoDigital[];
   autorizacion?: Autorizacion;
+  versiones?: Documento[];
 }
 
 
