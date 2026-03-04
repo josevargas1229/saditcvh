@@ -348,5 +348,18 @@ export class UploadSectionComponent {
     this.isDragging = false;
 
   }
+  onModoSinNomenclaturaChange(): void {
+    this.selectedFiles = [];
+    this.useZip = false;
+
+    this.stateService.showToast(
+      this.allowSinNomenclatura
+        ? 'Modo SIN NOMENCLATURA activado: puedes subir archivos con cualquier nombre'
+        : 'Modo NORMAL activado: usa la nomenclatura obligatoria ',
+      this.allowSinNomenclatura ? 'warning' : 'info'
+    );
+
+    this.emitRecentUploads();
+  }
 
 }

@@ -247,5 +247,50 @@ export class CargaMasivaService {
     if (nombre.endsWith('.rar')) return 'rar';
     return archivo.type;
   }
+  // ──────────────────────────────────────────────
+  // MÉTODOS PARA MODO SIN NOMENCLATURA (AGREGAR AL FINAL)
+  subirArchivoComprimidoSinNomenclatura(archivo: File, useOcr: boolean = false): Observable<HttpEvent<any>> {
+    const formData = new FormData();
+    formData.append('archivo', archivo);
+    formData.append('useOcr', useOcr.toString());
+
+    return this.http.post<any>(
+      `${this.baseUrl}/comprimido-sin-nomenclatura`,
+      formData,
+      {
+        reportProgress: true,
+        observe: 'events',
+        withCredentials: true
+      }
+    ).pipe(
+      tap(event => {
+        if (event.type === HttpEventType.Response && event.body?.loteId) {
+          this.loteProcesando.next(event.body.loteId);
+        }
+      })
+    );
+  }
+
+  subirMultiplesPDFsSinNomenclatura(archivos: File[], useOcr: boolean = false): Observable<HttpEvent<any>> {
+    const formData = new FormData();
+    archivos.forEach(archivo => formData.append('archivos', archivo));
+    formData.append('useOcr', useOcr.toString());
+
+    return this.http.post<any>(
+      `${this.baseUrl}/pdfs-multiples-sin-nomenclatura`,
+      formData,
+      {
+        reportProgress: true,
+        observe: 'events',
+        withCredentials: true
+      }
+    ).pipe(
+      tap(event => {
+        if (event.type === HttpEventType.Response && event.body?.loteId) {
+          this.loteProcesando.next(event.body.loteId);
+        }
+      })
+    );
+  }
 
 }
