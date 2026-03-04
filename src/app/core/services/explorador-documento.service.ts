@@ -378,6 +378,20 @@ export class DocumentoService {
       .pipe(
         tap((response) => {
           this.loadingState.set(false);
+          // Eliminar del caché individual 
+          if (this.documentosCache.has(versionId)) {
+            const doc = this.documentosCache.get(versionId);
+            if(doc && doc.autorizacionId) {
+              this.autorizacionesCache.delete(doc.autorizacionId);
+            }
+            this.documentosCache.delete(versionId);
+          }
+          // Limpiar también a través del state general si es que no estaba en caché directo
+          const stateDocs = this.documentosState();
+          const targetDoc = stateDocs.find(d => d.id === versionId);
+          if (targetDoc) {
+             this.autorizacionesCache.delete(targetDoc.autorizacionId);
+          }
         }),
         catchError((error) => {
           this.errorState.set(error.message);
