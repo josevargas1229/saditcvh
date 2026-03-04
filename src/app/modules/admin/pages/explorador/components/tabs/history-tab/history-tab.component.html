@@ -79,11 +79,11 @@
                     <!-- Punto de línea de tiempo -->
                     <div class="absolute -left-[21px] bg-white dark:bg-black border-2 rounded-full w-3 h-3 mt-1.5 transition-colors" [class.border-green-500]="first" [class.bg-green-500]="first" [class.border-gray-300]="!first">
                     </div>
-                    <div class="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-neutral-700 rounded-lg p-4 hover:shadow-md transition-shadow relative" [class.opacity-60]="version.archivosDigitales?.[0]?.deleted_at">
+                    <div class="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-neutral-700 rounded-lg p-4 hover:shadow-md transition-shadow relative" [class.opacity-60]="version.deleted_at">
                         <!-- Badge de versión -->
                         <div class="absolute -top-3 right-4">
-                            <span class="px-2 py-1 rounded text-xs font-bold shadow-sm bg-gray-200 text-gray-700 dark:bg-neutral-700 dark:text-neutral-200" [class.bg-green-100]="first && !version.archivosDigitales?.[0]?.deleted_at" [class.text-green-800]="first && !version.archivosDigitales?.[0]?.deleted_at" [class.bg-gray-200]="!first || version.archivosDigitales?.[0]?.deleted_at" [class.text-gray-600]="!first || version.archivosDigitales?.[0]?.deleted_at" [class.dark:bg-green-900/40]="first && !version.archivosDigitales?.[0]?.deleted_at" [class.dark:text-green-300]="first && !version.archivosDigitales?.[0]?.deleted_at"> v{{ version.version }}
-                                <ng-container *ngIf="version.archivosDigitales?.[0]?.deleted_at"> (Eliminada)</ng-container>
+                            <span class="px-2 py-1 rounded text-xs font-bold shadow-sm bg-gray-200 text-gray-700 dark:bg-neutral-700 dark:text-neutral-200" [class.bg-green-100]="first && !version.deleted_at" [class.text-green-800]="first && !version.deleted_at" [class.bg-gray-200]="!first || version.deleted_at" [class.text-gray-600]="!first || version.deleted_at" [class.dark:bg-green-900/40]="first && !version.deleted_at" [class.dark:text-green-300]="first && !version.deleted_at"> v{{ version.version }}
+                                <ng-container *ngIf="version.deleted_at"> (Eliminada)</ng-container>
                             </span>
                         </div>
                         <!-- Información de la versión -->
@@ -120,12 +120,12 @@
                         <!-- Acciones -->
                         <div class="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-neutral-700">
                             <div class="flex items-center gap-2">
-                                <span *ngIf="first && !version.archivosDigitales?.[0]?.deleted_at" class="text-xs font-medium px-2 py-0.5 rounded
+                                <span *ngIf="first && !version.deleted_at" class="text-xs font-medium px-2 py-0.5 rounded
 					text-green-600 bg-green-50
 					dark:text-green-300 dark:bg-green-900/30"> Versión actual </span>
                             </div>
                             <div class="flex gap-2">
-                                <button *ngIf="!version.archivosDigitales?.[0]?.deleted_at" (click)="onDownloadVersion(version)" class="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded
+                                <button *ngIf="!version.deleted_at" (click)="onDownloadVersion(version)" class="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded
 								text-blue-600 bg-blue-50 border border-blue-200
 								hover:bg-blue-100
 								dark:text-blue-300 dark:bg-blue-900/30 dark:border-blue-800
@@ -135,7 +135,7 @@
                                     </svg> Descargar </button>
                                 
                                 <!-- Boton Eliminar -->
-                                <button *ngIf="isAdmin() && !version.archivosDigitales?.[0]?.deleted_at && documentVersions.length > 1" (click)="onDeleteVersion(version)" class="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded
+                                <button *ngIf="isAdmin() && !version.deleted_at && documentVersions.length > 1" (click)="onDeleteVersion(version)" class="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded
                                 text-red-600 bg-red-50 border border-red-200
                                 hover:bg-red-100
                                 dark:text-red-300 dark:bg-red-900/30 dark:border-red-800
