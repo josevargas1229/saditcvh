@@ -134,7 +134,7 @@
                                     </svg> Descargar </button>
                                 
                                 <!-- Boton Eliminar -->
-                                <button *ngIf="isAdmin() && !version.deleted_at" (click)="onDeleteVersion(version)" class="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded
+                                <button *ngIf="isAdmin() && !version.deleted_at && versionesActivasCount > 1" (click)="onDeleteVersion(version)" class="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded
                                 text-red-600 bg-red-50 border border-red-200
                                 hover:bg-red-100
                                 dark:text-red-300 dark:bg-red-900/30 dark:border-red-800
