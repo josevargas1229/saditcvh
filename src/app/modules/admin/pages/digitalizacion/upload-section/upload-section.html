@@ -56,10 +56,12 @@
                         </div>
                         <div class="flex-1">
                             <span class="text-gray-900 dark:text-neutral-100 font-semibold">
-                                Permitir carga sin nomenclatura
+                                Permitir carga de archivos sin nomenclatura estándar
                             </span>
                             <p class="text-sm text-gray-600 dark:text-neutral-400 mt-1">
-                                Omite validación de nombres. Todo se guardará como SP-XXX en municipio 85.
+                                Para expedientes excepcionales que no siguen el formato de nombre requerido, mencionado
+                                arriba.
+                                Se omitirá la validación del nombre del archivo.
                             </p>
                         </div>
                     </label>
@@ -68,14 +70,25 @@
                 <!-- Bloque amarillo aviso -->
                 <div *ngIf="allowSinNomenclatura"
                     class="mb-6 p-5 rounded-xl border border-yellow-300 dark:border-yellow-600/40 bg-yellow-50 dark:bg-yellow-900/20">
-                    <h4 class="text-sm font-bold text-yellow-900 dark:text-yellow-200 mb-2">
-                        Modo sin nomenclatura activado
-                    </h4>
-                    <p class="text-sm text-yellow-900 dark:text-yellow-200/90">
-                        Los archivos no usarán nomenclatura. Se crearán autorizaciones genéricas (SP-XXX) en municipio
-                        85.
-                        <strong>Podrá requerir clasificación manual después.</strong>
-                    </p>
+                    <div class="flex items-start gap-3">
+                        <!-- Ícono -->
+                        <svg class="w-5 h-5 mt-0.5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                        </svg>
+
+                        <div>
+                            <h4 class="text-sm font-bold text-yellow-900 dark:text-yellow-200 mb-2">
+                                Modo sin nomenclatura activado
+                            </h4>
+                            <p class="text-sm text-yellow-900 dark:text-yellow-200/90">
+                                Al no contar con una nomenclatura reconocible, el sistema no puede clasificarlos
+                                automáticamente por municipio, modalidad ni tipo. En su lugar, se guardarán en una
+                                <strong>carpeta de archivos especiales</strong>, donde podrán ser revisados.
+                            </p>
+                        </div>
+                    </div>
                 </div>
                 <!-- En el área de dropzone -->
                 <div class="relative flex flex-col items-center justify-center min-h-[260px] rounded-xl border-2 border-dashed border-[#691831]/40 dark:border-[#c44569]/40 bg-white dark:bg-[#050505] transition-all duration-200 cursor-pointer text-center"
