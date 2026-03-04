@@ -588,22 +588,19 @@ export class DigitalizacionView implements OnInit, OnDestroy {
   }
 
   goToDocumentSearch(pdfId: string, filename: string = ''): void {
-    this.selectedPdfId = pdfId;
-    this.searchTerm = this.globalSearchTerm;
-    this.caseSensitive = this.globalCaseSensitive;
-    this.activeTab = 'search';
-    this.onPdfSelect(pdfId);
-    this.stateService.showToast(`Navegando a búsqueda en "${filename || 'el documento seleccionado'}"`, 'success');
-    // this.buildExploradorUrl(filename)
-
     const url = this.buildExploradorUrl(filename);
 
     if (url) {
-      console.log("url")
-      console.log(url)
-      this.router.navigateByUrl(url);
+      const qMatch = url.match(/\?q=(.*)$/);
+      const q = qMatch ? qMatch[1] : null;
+
+      if (q) {
+        this.router.navigate(['/admin/explorador'], { queryParams: { q } });
+      } else {
+        this.router.navigateByUrl(url);
+      }
     } else {
-      this.stateService.showToast('No se pudo construir la URL del explorador', 'error');
+      this.stateService.showToast('No se pudo construir la URL del explorador para este archivo', 'error');
     }
   }
 
