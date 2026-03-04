@@ -135,8 +135,11 @@ export class HistoryTabComponent {
   onDeleteVersion(version: any): void {
     if (!this.isAdmin()) return;
     
-    // Si ha sido marcada como eliminada o solo queda 1 version, no se puede borrar
-    if (version.deleted_at || this.documentVersions.length <= 1) return;
+    // Calcular versiones activas
+    const versionesActivas = this.documentVersions.filter(v => !v.deleted_at);
+
+    // Si ha sido marcada como eliminada o solo queda 1 version activa globalmente, no se puede borrar
+    if (version.deleted_at || versionesActivas.length <= 1) return;
 
     if (confirm('¿Estás seguro de que deseas eliminar lógicamente esta versión? Esta acción revocará el acceso al archivo.')) {
       this.loadingService.show();
