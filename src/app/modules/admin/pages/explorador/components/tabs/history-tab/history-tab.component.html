@@ -88,29 +88,28 @@
                         </div>
                         <!-- Información de la versión -->
                         <div class="mb-3">
-                            <div class="font-medium text-gray-800 dark:text-neutral-100 mb-1"> {{
-                                getFileNameFromPath(version.archivosDigitales?.[0]?.ruta_almacenamiento) }}
+                            <div class="font-medium text-gray-800 dark:text-neutral-100 mb-1"> 
+                                {{ version.archivosDigitales?.[0]?.ruta_almacenamiento ? getFileNameFromPath(version.archivosDigitales?.[0]?.ruta_almacenamiento) : 'Documento (Sin Archivo Adjunto)' }}
                             </div>
-                            <div class="text-xs text-gray-500 dark:text-neutral-400 flex items-center gap-2">
+                            <div class="text-xs text-gray-500 dark:text-neutral-400 flex items-center gap-2" *ngIf="version.archivosDigitales?.[0]">
                                 <span class="flex items-center gap-1">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
-                                    {{ version.archivosDigitales?.[0]?.digitalizadoPor?.first_name
-                                    }}
-                                    {{ version.archivosDigitales?.[0]?.digitalizadoPor?.last_name
-                                    }}
+                                    {{ version.archivosDigitales?.[0]?.digitalizadoPor?.first_name || 'Usuario' }}
+                                    {{ version.archivosDigitales?.[0]?.digitalizadoPor?.last_name || 'Desconocido' }}
                                 </span>
                                 <span>•</span>
                                 <span class="flex items-center gap-1">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    {{ version.archivosDigitales?.[0]?.fecha_digitalizacion | fechaLocal }}
+                                    {{ (version.archivosDigitales?.[0]?.fecha_digitalizacion | fechaLocal) || 'Desconocida' }}
                                 </span>
-                                <span>•</span>
-                                <span>{{ formatFileSize(version.archivosDigitales?.[0]?.tamano_bytes) }}
-                                </span>
+                                <ng-container *ngIf="version.archivosDigitales?.[0]?.tamano_bytes">
+                                    <span>•</span>
+                                    <span>{{ formatFileSize(version.archivosDigitales?.[0]?.tamano_bytes) }}</span>
+                                </ng-container>
                             </div>
                         </div>
                         <!-- Comentario -->
@@ -135,7 +134,7 @@
                                     </svg> Descargar </button>
                                 
                                 <!-- Boton Eliminar -->
-                                <button *ngIf="isAdmin() && !version.deleted_at && documentVersions.length > 1" (click)="onDeleteVersion(version)" class="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded
+                                <button *ngIf="isAdmin() && !version.deleted_at" (click)="onDeleteVersion(version)" class="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded
                                 text-red-600 bg-red-50 border border-red-200
                                 hover:bg-red-100
                                 dark:text-red-300 dark:bg-red-900/30 dark:border-red-800
