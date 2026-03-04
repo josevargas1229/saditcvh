@@ -301,6 +301,8 @@ export class UploadSectionComponent {
   private validateNomenclature(filename: string): boolean {
     if (!filename) return false;
     const base = filename.replace(/\.[^/.]+$/, '').trim();
+
+    // Regex anclado al inicio; permite que haya texto adicional después
     const re = /^(\d+)\s+(\d+)-(\d+)-(\d+)-(\d+)\s+([CP])\b/i;
     return re.test(base);
   }
