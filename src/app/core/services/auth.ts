@@ -93,6 +93,30 @@ export class AuthService {
     return this._currentUser()?.username ?? null;
   }
 
+  // Check if User has specific access to a municipality
+  hasAccessToMunicipio(municipioId: number, permissionName?: string): boolean {
+    const user = this._currentUser();
+    if (!user) return false;
+
+    // Administrador has access to everything
+    if (this.hasRole('administrador')) return true;
+
+    // Direct check in municipality_access array
+    if (user.municipality_access && user.municipality_access.length > 0) {
+      const access = user.municipality_access.find(m => m.municipio_id === municipioId);
+      if (!access) return false;
+
+      // If a specific permission is required, check it
+      if (permissionName && access.permission) {
+        return access.permission.name === permissionName;
+      }
+
+      return true; // Has access to municipality
+    }
+
+    return false;
+  }
+
   // Email (si existe)
   get email(): string | null {
     return this._currentUser()?.email ?? null;
