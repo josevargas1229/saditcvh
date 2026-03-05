@@ -12,6 +12,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { LoadingService } from '../../../../core/services/explorador-loading.service';
 import { ViewerTab } from '../../../../core/helpers/tabs-permissions.helper';
 import { ArchivoUrlService } from './services/archivo-url.service';
+import { AuthService } from '../../../../core/services/auth';
 
 @Component({
   selector: 'app-explorador', standalone: false,
@@ -71,19 +72,31 @@ export class ExploradorView implements OnInit, OnDestroy {
   tiposAutorizacion = this.tiposAutorizacionSvc.tipos;
   modalidades = this.modalidadSvc.modalidadesOrdenadas;
   private autorizacionIdCargado = signal<number | null>(null);
+
+  // Inject AuthService to check permissions
+  private authService = inject(AuthService);
+
   documentVersions = computed(() => {
     const autorizacionId = this.selectedAutorizacionId();
     const documentos = this.documentoService.documentos();
+    const currentAutorizacion = this.autorizacionService.autorizacionActual(); // Get current autorizacion for municpioId
+    const isAdmin = this.authService.hasRole ? this.authService.hasRole('administrador') : false;
+
+    // Fallback securely checking if user has access to this specific municipality
+    const hasMunicipalityAccess = currentAutorizacion && currentAutorizacion.municipio_id
+      ? (this.authService.hasAccessToMunicipio ? this.authService.hasAccessToMunicipio(currentAutorizacion.municipio_id) : false)
+      : false;
+
     if (!autorizacionId) return [];
-    
+
     // Extraemos todas las versiones de esos documentos raíz y las aplanamos
     let todasLasVersiones: any[] = [];
-    
+
     documentos.filter(d => d.autorizacionId === autorizacionId).forEach(doc => {
       // Pushear el documento raíz pero sin la propiedad anidada 'versiones' para evitar recursión infinita en UI
       const rootDoc = { ...doc, versiones: [] };
       todasLasVersiones.push(rootDoc);
-      
+
       // Si el documento raíz trajo hijos (versiones anteriores), añadirlos a la lista plana
       if (doc.versiones && Array.isArray(doc.versiones)) {
         todasLasVersiones.push(...doc.versiones);
@@ -94,7 +107,10 @@ export class ExploradorView implements OnInit, OnDestroy {
     const mapSeguro = new Map(todasLasVersiones.map(item => [item.id, item]));
     const arrayUnico = Array.from(mapSeguro.values());
 
-    return arrayUnico.sort((a, b) => b.version - a.version);
+    // Filter deleted items if user is neither admin nor has municipality access
+    return arrayUnico
+      .filter(d => (!d.deleted_at) || (d.deleted_at && (isAdmin || hasMunicipalityAccess)))
+      .sort((a, b) => b.version - a.version);
   });
   isCollapsed = false;
 
@@ -150,7 +166,7 @@ export class ExploradorView implements OnInit, OnDestroy {
     const autorizacionId = this.selectedAutorizacionId();
     // Usa la nueva propiedad combinada 'documentVersions' que incluye hijas también
     const todasLasVersiones = this.documentVersions();
-    
+
     // Ignorar las versiones que hayan sido eliminadas lógicamente
     const versionesActivas = todasLasVersiones.filter(d => !d.deleted_at);
 
@@ -171,15 +187,15 @@ export class ExploradorView implements OnInit, OnDestroy {
 
     // Iniciar auto-refresh cada 5 minutos (300000 ms)
     console.log('[ExploradorView] ⏳ Programando refresco automático cada 5 minutos.');
-    
+
     this.refreshInterval = setInterval(() => {
       const timestamp = new Date().toLocaleTimeString();
       console.log(`[ExploradorView] 🔄 ${timestamp}: Ejecutando refresco automático del árbol...`);
-      
+
       this.autorizacionService.refresh();
-      
+
       // Opcional: También podrías querer refrescar el árbol visual si es necesario
-      this.treeService.init(); 
+      this.treeService.init();
     }, 300000);
 
     this.route.queryParamMap.subscribe(map => {
