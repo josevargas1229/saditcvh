@@ -10,10 +10,13 @@ import {
   ViewChild,
   ElementRef,
   effect,
-  SecurityContext
+  SecurityContext,
+  computed,
+  inject
 } from '@angular/core';
 import { SafeResourceUrl, DomSanitizer } from '@angular/platform-browser';
 import { AutorizacionTreeNode } from '../../../../../../../core/models/autorizacion-tree.model';
+import { AuthService } from '../../../../../../../core/services/auth';
 
 @Component({
   selector: 'app-preview-tab',
@@ -37,11 +40,16 @@ export class PreviewTabComponent implements OnInit, OnDestroy, OnChanges {
   pdfUrlString: string = '';
   currentPage = signal(1);
   totalPages = signal(0);
-
-  // Para detectar cambios de página
-  // private pageCheckInterval: any;
-  // private lastDetectedPage = 1;
-  // private pageDetectionActive = false;
+  
+  private authService = inject(AuthService);
+  isAdmin = computed(() => this.authService.hasRole('administrador'));
+  
+  canDownload(): boolean {
+      if(this.isAdmin()) return true;
+      const municipioId = this.selectedNode?.data?.municipio_id || this.selectedNode?.data?.municipioId;
+      if (!municipioId) return false;
+      return this.authService.hasAccessToMunicipio(municipioId, 'descargar');
+  }
 
   constructor(
     private sanitizer: DomSanitizer,
