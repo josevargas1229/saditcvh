@@ -24,7 +24,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `${window.location.protocol}//${window.
 export class PdfViewerDocument implements OnDestroy, AfterViewInit {
 
   private _src!: string;
-
+  @Input() canDownload: boolean = true;
   @Input()
   set src(value: string) {
     if (!value) return;
@@ -271,6 +271,13 @@ export class PdfViewerDocument implements OnDestroy, AfterViewInit {
     this.scale = Math.max(this.scale - 0.2, 0.5);
     this.reRenderVisiblePages();
   }
+  
+  downloadPdf() {
+    if(this.src && this.canDownload) {
+        window.open(this.src, '_blank');
+    }
+  }
+
   private async reRenderVisiblePages() {
     // Limpiar estado de páginas ya renderizadas
     this.renderedPages.forEach((canvas) => canvas.remove());
