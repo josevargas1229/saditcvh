@@ -37,6 +37,21 @@ export class HistoryTabComponent {
     return this.documentVersions?.filter(v => !v.deleted_at)?.length || 0;
   }
 
+  // --- Permisos de Acceso Territoriales ---
+  canEdit(): boolean {
+      if(this.isAdmin()) return true;
+      const municipioId = this.selectedNode?.data?.municipio_id || this.selectedNode?.data?.municipioId;
+      if (!municipioId) return false;
+      return this.authService.hasAccessToMunicipio(municipioId, 'editar');
+  }
+
+  canDownload(): boolean {
+      if(this.isAdmin()) return true;
+      const municipioId = this.selectedNode?.data?.municipio_id || this.selectedNode?.data?.municipioId;
+      if (!municipioId) return false;
+      return this.authService.hasAccessToMunicipio(municipioId, 'descargar');
+  }
+
   @Output() openMergePdf = new EventEmitter<void>();
   formatFileSize(bytes: number): string {
     if (bytes === 0) return '0 Bytes';
