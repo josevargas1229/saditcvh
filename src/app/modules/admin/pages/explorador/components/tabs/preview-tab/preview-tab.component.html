@@ -104,6 +104,7 @@
 								<app-pdf-viewer-document *ngIf="pdfUrlString" [src]="pdfUrlString"
 									(pageChanged)="onPageChanged($event)" (documentLoaded)="onDocumentLoaded($event)"
 									(loadingProgress)="onPdfProgress($event)"
+                                    [canDownload]="canDownload()"
 									class="block h-full">
 								</app-pdf-viewer-document>
 							</div>
