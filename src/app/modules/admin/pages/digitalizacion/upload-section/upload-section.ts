@@ -5,6 +5,7 @@ import { PdfService, PDFUploadResponse } from '../services/pdf-ocr.service';
 import { ExploradorStateService } from '../../explorador/services/explorador-state.service';
 import { CargaMasivaService } from '../../../../../core/services/digitalizacion-carga-masiva.service';
 import { HttpEventType } from '@angular/common/http';
+import { AuthService } from '../../../../../core/services/auth';
 
 @Component({
   selector: 'app-upload-section',
@@ -45,8 +46,14 @@ export class UploadSectionComponent {
   constructor(
     private pdfService: PdfService,
     private cargaMasivaService: CargaMasivaService,
-    private stateService: ExploradorStateService
+    private stateService: ExploradorStateService,
+    private authService: AuthService
   ) { }
+
+  get canSkipNomenclature(): boolean {
+    if (this.authService.hasRole('administrador')) return true;
+    return Boolean(this.authService.hasAccessToMunicipio(85));
+  }
 
   // ========== FUNCIONES PARA SUBIDA ==========
   onFilesSelected(event: any): void {
