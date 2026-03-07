@@ -29,7 +29,7 @@ export interface Role {
 // Interfaz para Permission
 export interface Permission {
   id: number;
-  name: string; // 'ver', 'editar', 'imprimir', etc.
+  name: string; // 'ver', 'editar', 'subir', etc.
   description?: string;
 }
 
