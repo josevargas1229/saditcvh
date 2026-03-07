@@ -108,8 +108,9 @@ export class ExploradorView implements OnInit, OnDestroy {
     const arrayUnico = Array.from(mapSeguro.values());
 
     // Filter deleted items if user is neither admin nor has municipality access
+    // We now return all versions so they always appear in history-tab as 'Eliminada'.
+    // Action buttons inside history-tab already check for deleted_at and permissions.
     return arrayUnico
-      .filter(d => (!d.deleted_at) || (d.deleted_at && (isAdmin || hasMunicipalityAccess)))
       .sort((a, b) => b.version - a.version);
   });
   isCollapsed = false;
