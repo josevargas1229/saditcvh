@@ -58,6 +58,23 @@ export class HistoryTabComponent {
       return permisos.includes('editar');
   }
 
+  canUpload(): boolean {
+      if(this.isAdmin()) return true;
+      const data = this.selectedNode?.data;
+      if (!data) return false;
+      
+      const municipioId = this.selectedNode?.type === 'autorizacion' 
+          ? (data.municipioId || data.municipio?.id) 
+          : (this.selectedNode?.type === 'municipio' ? data.id : null);
+          
+      if (!municipioId) return false;
+      const territorio = this.municipioService.municipios().find(m => m.id === municipioId);
+      const permisos = territorio?.permisos;
+      
+      if (!permisos || !Array.isArray(permisos)) return false;
+      return permisos.includes('subir');
+  }
+
   canDownload(): boolean {
       if(this.isAdmin()) return true;
       const data = this.selectedNode?.data;
