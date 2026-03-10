@@ -623,17 +623,6 @@ export class Comentarios implements OnInit, OnDestroy, OnChanges {
     setTimeout(() => document.body.removeChild(toast), 3000);
   }
 
-  // ========== EXPORTACIÓN ==========
-
-  exportarAnotaciones(): void {
-    if (!this.pdfIdentifier || this.comments().length === 0) {
-      this.showToast('No hay comentarios para exportar', 'warning');
-      return;
-    }
-    // Llamar al metodo correcto que usa el Documento ID numérico
-    this.anotacionesService.descargarExportacion(this.pdfIdentifier, 'Exportacion');
-  }
-
   vaciarComentarios(): void {
     if (confirm('¿Vaciar todos los comentarios?')) {
       // Vaciar solo los comentarios del usuario actual
