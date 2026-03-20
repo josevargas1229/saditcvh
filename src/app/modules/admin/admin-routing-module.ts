@@ -77,6 +77,14 @@ const routes: Routes = [
           breadcrumb: [{ label: 'respaldos', path: '/admin/respaldos' }],
         },
       },
+      {
+        path: 'busqueda-global',
+        loadComponent: () => import('./pages/busqueda-global/busqueda-global.view').then(m => m.BusquedaGlobalView),
+        data: {
+          title: 'búsqueda global',
+          breadcrumb: [{ label: 'búsqueda global', path: '/admin/busqueda-global' }],
+        },
+      },
       // --- RUTAS PROTEGIDAS PARA ADMINISTRADORES ---
       {
         path: 'usuarios',
