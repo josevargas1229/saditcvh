@@ -64,6 +64,9 @@ export interface PDFListItem {
 
 export interface PDFListResponse {
   total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
   by_status: {
     completed: number;
     processing: number;
@@ -151,8 +154,12 @@ export class PdfService {
     return this.http.get<PDFInfo>(`${this.apiUrl}/${pdfId}/info`);
   }
 
-  listPdfs(): Observable<PDFListResponse> {
-    return this.http.get<PDFListResponse>(`${this.apiUrl}/list`);
+  listPdfs(page: number = 1, limit: number = 50): Observable<PDFListResponse> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+      
+    return this.http.get<PDFListResponse>(`${this.apiUrl}/list`, { params });
   }
 
   deletePdf(pdfId: string): Observable<any> {
