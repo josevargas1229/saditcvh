@@ -633,6 +633,38 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Paginator -->
+      @if (pdfsList.length > 0) {
+      <div class="flex flex-col sm:flex-row items-center justify-between bg-white dark:bg-[#1a1a1b] p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-800 mt-6">
+        <div class="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300 mb-4 sm:mb-0 font-medium">
+          <span>Mostrar</span>
+          <select [ngModel]="pageSize()" (change)="onPageSizeChange($event)" class="border-gray-300 dark:border-neutral-700 dark:bg-[#131314] rounded-md text-sm focus:ring-[#691831] focus:border-[#691831] dark:text-gray-300 px-3 py-1.5 shadow-sm">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="500">500</option>
+          </select>
+          <span>por pagina</span>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <span class="text-sm text-gray-700 dark:text-gray-300 font-medium hidden sm:inline-block">
+            Pagina <span class="font-bold text-[#691831] dark:text-[#c44569]">{{ currentPage() }}</span> de <span class="font-bold">{{ totalPages() }}</span> 
+            ({{ totalRecords() }} items)
+          </span>
+          <div class="flex items-center space-x-2">
+            <button (click)="prevPage()" [disabled]="currentPage() <= 1" class="px-4 py-2 border-2 border-gray-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-[#131314] text-gray-700 dark:text-gray-300 font-semibold hover:border-gray-400 hover:bg-gray-50 dark:hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#691831] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+              Anterior
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage() >= totalPages()" class="px-4 py-2 border-2 border-gray-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-[#131314] text-gray-700 dark:text-gray-300 font-semibold hover:border-gray-400 hover:bg-gray-50 dark:hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#691831] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+              Siguiente
+            </button>
+          </div>
+        </div>
+      </div>
+      }
     </section>
     <section *ngIf="activeTab === 'lotes'" class="space-y-6">
 
