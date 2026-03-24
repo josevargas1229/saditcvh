@@ -182,12 +182,12 @@ export class CargaMasivaService {
   }
 
   // Listar lotes del usuario
-  listarLotesUsuario(limit: number = 20, offset: number = 0): Observable<{ success: boolean, lotes: LoteOCR[] }> {
+  listarLotesUsuario(limit: number = 20, offset: number = 0): Observable<{ success: boolean, lotes: LoteOCR[], total?: number, totalPages?: number }> {
     const params = new HttpParams()
       .set('limit', limit.toString())
       .set('offset', offset.toString());
 
-    return this.http.get<{ success: boolean, lotes: LoteOCR[] }>(
+    return this.http.get<{ success: boolean, lotes: LoteOCR[], total?: number, totalPages?: number }>(
       `${this.baseUrl}/lotes`,
       {
         params,
