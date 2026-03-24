@@ -73,6 +73,12 @@ export class DigitalizacionView implements OnInit, OnDestroy {
   totalRecords = signal(0);
   statusCounts = signal({ completed: 0, processing: 0, pending: 0, failed: 0 });
 
+  // Variables de paginación (Procesos de carga)
+  lotesCurrentPage = signal(1);
+  lotesPageSize = signal(20);
+  lotesTotalPages = signal(1);
+  lotesTotalRecords = signal(0);
+
   // Variables para búsqueda rápida
   quickSearchFile: File | null = null;
   quickSearchTerm: string = '';
@@ -171,11 +177,16 @@ export class DigitalizacionView implements OnInit, OnDestroy {
     this.isRefreshing.set(true);
     this.isLoadingLotes.set(true);
 
-    this.cargaMasivaService.listarLotesUsuario(20, 0)
+    const limit = this.lotesPageSize();
+    const offset = (this.lotesCurrentPage() - 1) * limit;
+
+    this.cargaMasivaService.listarLotesUsuario(limit, offset)
       .subscribe({
         next: (resp) => {
           if (resp.success) {
             this.lotesUsuario.set(resp.lotes);
+            this.lotesTotalRecords.set(resp.total || 0);
+            this.lotesTotalPages.set(resp.totalPages || 1);
           }
         },
         error: (err) => {
@@ -263,8 +274,11 @@ export class DigitalizacionView implements OnInit, OnDestroy {
     //     this.isRefreshing.set(false);
     //   }
     // });
+    const limitParams = this.lotesPageSize();
+    const offsetParams = (this.lotesCurrentPage() - 1) * limitParams;
+
     forkJoin({
-      lotes: this.cargaMasivaService.listarLotesUsuario(20, 0),
+      lotes: this.cargaMasivaService.listarLotesUsuario(limitParams, offsetParams),
       pdfs: this.pdfService.listPdfs(this.currentPage(), this.pageSize())
     })
       .pipe(
@@ -277,6 +291,8 @@ export class DigitalizacionView implements OnInit, OnDestroy {
         next: ({ lotes, pdfs }) => {
           if (lotes.success) {
             this.lotesUsuario.set(lotes.lotes);
+            this.lotesTotalRecords.set(lotes.total || 0);
+            this.lotesTotalPages.set(lotes.totalPages || 1);
           }
 
           if (pdfs) {
@@ -677,6 +693,28 @@ export class DigitalizacionView implements OnInit, OnDestroy {
     this.currentPage.set(1);
     this.loadPdfsList();
   }
+
+  nextLotesPage() {
+    if (this.lotesCurrentPage() < this.lotesTotalPages()) {
+       this.lotesCurrentPage.set(this.lotesCurrentPage() + 1);
+       this.loadLotesUsuario();
+    }
+  }
+
+  prevLotesPage() {
+    if (this.lotesCurrentPage() > 1) {
+       this.lotesCurrentPage.set(this.lotesCurrentPage() - 1);
+       this.loadLotesUsuario();
+    }
+  }
+  
+  onLotesPageSizeChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.lotesPageSize.set(Number(target.value));
+    this.lotesCurrentPage.set(1);
+    this.loadLotesUsuario();
+  }
+
   onUploadCompleted() {
     this.refresh$.next();
   }
@@ -715,7 +753,7 @@ export class DigitalizacionView implements OnInit, OnDestroy {
   //     tipo.toUpperCase()
   //   ].join('_');
 
-  //   return `/admin/explorador?q=${query}`;
+  //   return `http://localhost:4200/admin/explorador?q=${query}`;
   // }
   buildExploradorUrl(nombreArchivo: string): string | null {
     if (!nombreArchivo) return null;
