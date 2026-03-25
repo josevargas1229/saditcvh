@@ -33,7 +33,7 @@ export class AutorizacionService {
     autorizacionActual: null,
     pagination: {
       page: 1,
-      limit: 10,
+      limit: 20,
       total: 0,
       totalPages: 0
     },
@@ -58,7 +58,7 @@ export class AutorizacionService {
   public filtros$ = toObservable(this.filtros);
 
   private page = signal(1);
-  private limit = signal(10);
+  private limit = signal(20);
   private filtrosSignal = signal<BusquedaAutorizacion | null>(null);
   private refreshTrigger = signal(0);
 
@@ -75,21 +75,25 @@ export class AutorizacionService {
     this.autorizacionesParams$.pipe(
       tap(() => this.updateState({ loading: true, error: null })),
 
-      switchMap(({ page, limit, filtros }) => {
+      switchMap(({ page, limit, filtros }: { page: number; limit: number; filtros: BusquedaAutorizacion | null }) => {
         return filtros
-          ? this.buscarAutorizacionesApi(filtros, page, limit,)
+          ? this.buscarAutorizacionesApi(filtros, page, limit)
           : this.getAutorizacionesApi(page, limit);
       }),
 
-      tap(response => {
+      tap((response: PaginatedResponse<Autorizacion>) => {
+        const { currentPage, totalPages, totalItems, itemsPerPage } = response.pagination || (response as any);
+        
         this.updateState({
-          autorizaciones: response.data,
-          // pagination: {
-          //   page: response.currentPage,
-          //   limit: response.perPage,
-          //   total: response.total,
-          //   totalPages: response.lastPage
-          // },
+          autorizaciones: this.page() === 1 
+            ? response.data 
+            : [...this.state().autorizaciones, ...response.data],
+          pagination: {
+            page: currentPage || this.page(),
+            limit: itemsPerPage || this.limit(),
+            total: totalItems || 0,
+            totalPages: totalPages || 0
+          },
           loading: false
         });
       }),
@@ -104,6 +108,13 @@ export class AutorizacionService {
 
   setPage(page: number): void {
     this.page.set(page);
+  }
+
+  cargarMas(): void {
+    const { page, totalPages } = this.state().pagination;
+    if (page < totalPages) {
+      this.page.set(page + 1);
+    }
   }
 
   setLimit(limit: number): void {
