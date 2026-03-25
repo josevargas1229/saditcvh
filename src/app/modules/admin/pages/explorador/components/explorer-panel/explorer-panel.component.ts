@@ -133,12 +133,17 @@ export class ExplorerPanelComponent {
   /* =======================
   * Helpers
   * ======================= */
-  // ya no necesitamos la lógica local para encontrar nodos; el servicio de
-  // estado cuenta con un método dedicado.
+  pagination = this.autorizacionService.pagination;
+  loading = this.autorizacionService.loading;
+  hasNextPage = computed(() => this.pagination().page < this.pagination().totalPages);
 
+  loadMore(): void {
+    this.autorizacionService.cargarMas();
+  }
 
   resetExplorer(): void {
     this.isLoading.set(true);
+
 
     setTimeout(() => {
       // limpiar input
