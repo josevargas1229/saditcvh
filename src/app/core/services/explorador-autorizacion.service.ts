@@ -33,7 +33,7 @@ export class AutorizacionService {
     autorizacionActual: null,
     pagination: {
       page: 1,
-      limit: 20,
+      limit: 5,
       total: 0,
       totalPages: 0
     },
@@ -58,7 +58,7 @@ export class AutorizacionService {
   public filtros$ = toObservable(this.filtros);
 
   private page = signal(1);
-  private limit = signal(20);
+  private limit = signal(5);
   private filtrosSignal = signal<BusquedaAutorizacion | null>(null);
   private refreshTrigger = signal(0);
 
