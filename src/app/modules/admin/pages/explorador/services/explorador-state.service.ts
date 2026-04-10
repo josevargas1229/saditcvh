@@ -142,7 +142,7 @@ export class ExploradorStateService {
    * el árbol aún no se ha cargado se vuelve a intentar cada 100 ms hasta que
    * esté disponible.
    */
-  selectNodeByQuery(query: string, onNotFound?: () => void): void {
+  selectNodeByQuery(query: string, onNotFound?: () => void, onTimeout?: () => void): void {
     if (!query) return;
 
     let retries = 0;
@@ -150,6 +150,15 @@ export class ExploradorStateService {
     let refreshTriggered = false;
 
     const trySelect = (): boolean => {
+      // Check timeout FIRST so we don't get stuck if tree remains empty
+      if (retries >= maxRetries) {
+        console.warn(`[selectNodeByQuery] Nodo '${query}' no existe en el árbol tras 5s de espera.`);
+        this.clearSelection();
+        this.showToast(`No se encontró carpeta / autorización para '${query}'`, 'error');
+        if (onTimeout) onTimeout();
+        return true; // Stop retrying
+      }
+
       const tree = this._tree();
       if (!tree || tree.length === 0) {
         return false; // keep waiting for first tree load
@@ -164,11 +173,6 @@ export class ExploradorStateService {
           refreshTriggered = true;
           onNotFound();
           return false; // Seguir intentando mientras carga
-        } else if (retries >= maxRetries) {
-          console.warn(`[selectNodeByQuery] Nodo '${query}' no existe en el árbol tras 5s de espera.`);
-          this.clearSelection();
-          this.showToast(`No se encontró el nodo '${query}' en el explorador`, 'error');
-          return true; // Stop retrying
         }
         return false; // Sigue buscando en el siguiente intervalo
       }

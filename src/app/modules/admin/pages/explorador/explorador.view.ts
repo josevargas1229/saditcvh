@@ -202,11 +202,18 @@ export class ExploradorView implements OnInit, OnDestroy {
     this.route.queryParamMap.subscribe(map => {
       const q = map.get('q');
       if (q) {
-        this.stateService.selectNodeByQuery(q, () => {
-          console.log('[ExploradorView] 🔍 Nodo no encontrado; filtrando árbol desde backend...');
-          this.autorizacionService.setFiltros({ search: q });
-          this.treeService.init();
-        });
+        this.stateService.selectNodeByQuery(q, 
+          () => {
+            console.log('[ExploradorView] 🔍 Nodo no encontrado; filtrando árbol desde backend...');
+            this.autorizacionService.setFiltros({ search: q });
+            this.treeService.init();
+          },
+          () => {
+            console.log('[ExploradorView] ⏱️ Timeout buscando nodo; restaurando árbol normal...');
+            this.autorizacionService.limpiarFiltros();
+            this.treeService.init();
+          }
+        );
       }
     });
   }
