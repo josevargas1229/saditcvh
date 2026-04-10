@@ -767,7 +767,6 @@ export class DigitalizacionView implements OnInit, OnDestroy {
     if (m1) {
       const [, numeroAutorizacion, municipio, modalidad, consecutivo1, consecutivo2, tipo] = m1;
       const query = [
-        numeroAutorizacion,
         municipio,
         modalidad,
         consecutivo1,
@@ -785,7 +784,6 @@ export class DigitalizacionView implements OnInit, OnDestroy {
       const [, numeroAutorizacion, municipio, modalidad, consecutivo1, consecutivo2, tipo] = m2;
 
       const query = [
-        numeroAutorizacion,
         municipio.padStart(2, '0'),
         modalidad.padStart(2, '0'),
         consecutivo1.padStart(2, '0'),

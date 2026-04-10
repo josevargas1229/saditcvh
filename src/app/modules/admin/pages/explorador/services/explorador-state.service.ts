@@ -212,11 +212,11 @@ export class ExploradorStateService {
 
     for (const node of nodes) {
       const newPath = [...path, node];
-      const matchByNombre = sanitizeStr(node.nombre) === normalized;
-      const matchById = sanitizeStr(node.id) === normalized;
+      const matchByNombre = !!sanitizeStr(node.nombre)?.includes(normalized);
+      const matchById = !!sanitizeStr(node.id)?.includes(normalized);
       const matchByCarpeta =
         node.type === 'autorizacion' &&
-        sanitizeStr(node.data?.nombreCarpeta) === normalized;
+        !!sanitizeStr(node.data?.nombreCarpeta)?.includes(normalized);
 
       if (matchByNombre || matchById || matchByCarpeta) {
         return newPath;
