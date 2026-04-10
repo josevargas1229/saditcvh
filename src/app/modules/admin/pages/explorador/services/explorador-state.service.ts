@@ -200,15 +200,19 @@ export class ExploradorStateService {
     query: string,
     path: AutorizacionTreeNode[] = []
   ): AutorizacionTreeNode[] | null {
-    const normalized = query.trim().toLowerCase();
+    // Función para normalizar eliminando espacios y signos de puntuación (-, _)
+    const sanitizeStr = (str: string | undefined | null) => 
+      str ? str.toLowerCase().replace(/[^a-z0-9]/g, '') : '';
+
+    const normalized = sanitizeStr(query);
 
     for (const node of nodes) {
       const newPath = [...path, node];
-      const matchByNombre = node.nombre?.toLowerCase() === normalized;
-      const matchById = node.id?.toLowerCase() === normalized;
+      const matchByNombre = sanitizeStr(node.nombre) === normalized;
+      const matchById = sanitizeStr(node.id) === normalized;
       const matchByCarpeta =
         node.type === 'autorizacion' &&
-        node.data?.nombreCarpeta?.toLowerCase() === normalized;
+        sanitizeStr(node.data?.nombreCarpeta) === normalized;
 
       if (matchByNombre || matchById || matchByCarpeta) {
         return newPath;
